@@ -1,0 +1,20 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://soacframe.io/sitemap.xml
+
+# Disallow admin and API endpoints
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+
+# Allow important pages
+Allow: /pricing
+Allow: /login
+Allow: /signup
+
+# Crawl-delay
+Crawl-delay: 0

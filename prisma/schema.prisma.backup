@@ -1,0 +1,1121 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/soacframe-website/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// Subscription tiers
+enum SubscriptionTier {
+  COMMUNITY
+  ENTRY
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+}
+
+// User management for authentication
+model User {
+  id              String            @id @default(cuid())
+  name            String?
+  email           String            @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?           // For email/password auth
+  role            UserRole          @default(VIEWER)
+  
+  // Subscription fields
+  subscriptionTier    SubscriptionTier   @default(COMMUNITY)
+  subscriptionStatus  SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId    String?            @unique
+  stripeSubscriptionId String?           @unique
+  subscriptionEndsAt  DateTime?
+  trialEndsAt         DateTime?
+  
+  accounts        Account[]
+  sessions        Session[]
+  dashboards      CustomDashboard[] // Phase 3 Tier 2
+  activities      UserActivity[]    // Phase 3 Tier 2
+  usageTracking   UsageTracking[]
+  organization    Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  ANALYST
+  VIEWER
+}
+
+// Security framework models (for Phase 2)
+model Device {
+  id          String     @id @default(cuid())
+  name        String
+  type        DeviceType
+  status      String     @default("active")
+  endpoint    String
+  credentials String     // Encrypted
+  config      Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("devices")
+}
+
+model Incident {
+  id             String            @id @default(cuid())
+  title          String
+  description    String?
+  severity       IncidentSeverity
+  status         IncidentStatus    @default(NEW)
+  confidence     ConfidenceLevel
+  patternId      String?
+  assignedTo     String?
+  entities       Json?             // User, host, IP data
+  events         Json?             // Related events
+  timeline       Json?             // Incident timeline
+  playbooks      Json?             // Executed playbooks
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("incidents")
+}
+
+model OperationalModel {
+  id          String @id @default(cuid())
+  name        String
+  patternId   String @unique
+  description String
+  phases      Json   // Array of phases
+  sources     Json   // Array of data sources
+  window      String // Time window
+  severity    String
+  isActive    Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("operational_models")
+}
+
+model Event {
+  id           String   @id @default(cuid())
+  source       String
+  sourceType   String
+  eventType    String
+  severity     String
+  entities     Json?    // User, host, IP, file data
+  rawData      Json
+  normalized   Json?
+  processed    Boolean  @default(false)
+  
+  timestamp DateTime
+  createdAt DateTime @default(now())
+
+  @@map("events")
+}
+
+// Content Management model
+model Content {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  type        ContentType
+  status      ContentStatus @default(DRAFT)
+  content     String?     @db.Text
+  excerpt     String?
+  featuredImage String?
+  gallery     Json?       // Array of image URLs
+  files       Json?       // Array of file URLs and metadata
+  metadata    Json?       // SEO, custom fields, etc.
+  authorId    String
+  publishedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contents")
+}
+
+// Website Content Management System
+model WebsiteContent {
+  id            String              @id @default(cuid())
+  section       String              // e.g., "hero", "features", "pricing", "footer"
+  contentKey    String              @unique // Unique identifier like "hero.title", "features.card1.title"
+  contentType   WebContentType      // TEXT, IMAGE, ICON, JSON, WIDGET
+  value         String?             @db.Text
+  jsonValue     Json?               // For complex data structures
+  order         Int                 @default(0)
+  isVisible     Boolean             @default(true)
+  metadata      Json?               // Additional configuration
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([section, contentKey])
+  @@index([section])
+  @@map("website_contents")
+}
+
+// Additional enums
+enum ContentType {
+  PAGE
+  POST
+  DOCUMENTATION
+  MEDIA
+  CUSTOM
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum WebContentType {
+  TEXT          // Plain text, headings, paragraphs
+  IMAGE         // Image URLs
+  ICON          // Icon names (lucide icons)
+  JSON          // Complex structures (cards, lists, etc.)
+  WIDGET        // Widget configurations
+  HTML          // HTML content
+}
+
+enum DeviceType {
+  PALOALTO_NGFW
+  ENTRAID
+  SIEM
+  EDR
+  CLOUD
+}
+
+enum IncidentSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum IncidentStatus {
+  NEW
+  ASSIGNED
+  INVESTIGATING
+  CONTAINED
+  RESOLVED
+  CLOSED
+  FALSE_POSITIVE
+}
+
+enum ConfidenceLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+// Security Alerts (real-time threat detection)
+model SecurityAlert {
+  id            String            @id @default(cuid())
+  title         String
+  description   String?
+  severity      AlertSeverity
+  status        AlertStatus       @default(OPEN)
+  source        String            // Integration/device that generated alert
+  sourceType    String            // Type of security tool
+  category      String            // e.g., "Malware", "Data Exfiltration"
+  indicators    Json?             // IOCs, IPs, hashes, etc.
+  mitreAttack   Json?             // MITRE ATT&CK mapping
+  rawData       Json?             // Original alert data
+  incidentId    String?           // Link to incident if escalated
+  assignedTo    String?
+  falsePositive Boolean           @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resolvedAt DateTime?
+
+  @@map("security_alerts")
+  @@index([status, severity])
+  @@index([source, createdAt])
+}
+
+// Data Integrations (security tool connections)
+model Integration {
+  id             String            @id @default(cuid())
+  name           String
+  type           IntegrationType
+  status         IntegrationStatus @default(DISCONNECTED)
+  endpoint       String
+  apiKey         String?           // Encrypted
+  credentials    Json?             // Additional auth data
+  config         Json?             // Tool-specific configuration
+  lastSync       DateTime?
+  syncInterval   Int?              // Minutes
+  eventsIngested Int               @default(0)
+  alertsGenerated Int              @default(0)
+  errorCount     Int               @default(0)
+  lastError      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("integrations")
+}
+
+// Device Monitoring Metrics
+model DeviceMetric {
+  id          String   @id @default(cuid())
+  deviceId    String
+  metricType  String   // cpu, memory, disk, network, threats
+  value       Float
+  unit        String
+  metadata    Json?
+  
+  timestamp DateTime @default(now())
+
+  @@map("device_metrics")
+  @@index([deviceId, timestamp])
+}
+
+// Notification Channels (Slack, Email, Webhooks)
+model NotificationChannel {
+  id          String        @id @default(cuid())
+  name        String
+  type        ChannelType
+  status      String        @default("active")
+  config      Json          // Channel-specific config (webhook URL, email, etc.)
+  filters     Json?         // Severity, category filters
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_channels")
+}
+
+// Notification History
+model Notification {
+  id          String           @id @default(cuid())
+  channelId   String
+  alertId     String?
+  incidentId  String?
+  type        NotificationType
+  title       String
+  message     String           @db.Text
+  status      String           @default("pending") // pending, sent, failed
+  errorMsg    String?
+  sentAt      DateTime?
+  
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+  @@index([channelId, createdAt])
+}
+
+// Audit Logs (compliance and forensics)
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  userEmail   String?
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  resource    String   // incidents, alerts, integrations, etc.
+  resourceId  String?
+  changes     Json?    // Before/after values
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  
+  timestamp DateTime @default(now())
+
+  @@map("audit_logs")
+  @@index([userId, timestamp])
+  @@index([resource, action, timestamp])
+}
+
+// Additional Enums for Phase 1
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  INVESTIGATING
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+enum IntegrationType {
+  SIEM
+  EDR
+  FIREWALL
+  IDS_IPS
+  CLOUD_SECURITY
+  EMAIL_SECURITY
+  DLP
+  SOAR
+  THREAT_INTEL
+  CUSTOM
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+  SYNCING
+}
+
+enum ChannelType {
+  EMAIL
+  SLACK
+  WEBHOOK
+  TEAMS
+  PAGERDUTY
+}
+
+enum NotificationType {
+  ALERT
+  INCIDENT
+  SYSTEM
+  COMPLIANCE
+}
+
+// ========================================
+// PHASE 2A: REPORTING ENGINE
+// ========================================
+
+// Report Templates (pre-built and custom)
+model ReportTemplate {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String?
+  type        ReportType
+  category    String        // Security, Compliance, Operations, Custom
+  config      Json          // Chart configs, filters, data sources
+  isDefault   Boolean       @default(false)
+  createdBy   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("report_templates")
+}
+
+// Generated Reports
+model Report {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  type          ReportType
+  format        ReportFormat
+  templateId    String?
+  status        ReportStatus @default(GENERATING)
+  parameters    Json?        // Date ranges, filters, options
+  data          Json?        // Report data
+  filePath      String?      // S3 path for PDF/CSV
+  fileSize      Int?         // Bytes
+  generatedBy   String?
+  scheduledId   String?      // Link to schedule if automated
+  
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  expiresAt   DateTime? // Auto-delete old reports
+
+  @@map("reports")
+  @@index([type, createdAt])
+  @@index([generatedBy, createdAt])
+}
+
+// Scheduled Reports (automated generation)
+model ReportSchedule {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  templateId  String
+  frequency   ScheduleFrequency
+  schedule    String          // Cron expression or time spec
+  format      ReportFormat
+  enabled     Boolean         @default(true)
+  recipients  Json?           // Email addresses or notification channels
+  parameters  Json?           // Default filters and options
+  lastRun     DateTime?
+  nextRun     DateTime?
+  runCount    Int             @default(0)
+  failCount   Int             @default(0)
+  lastError   String?
+  createdBy   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("report_schedules")
+}
+
+// Report Enums
+enum ReportType {
+  SECURITY_SUMMARY
+  COMPLIANCE
+  INCIDENT_ANALYSIS
+  ALERT_TRENDS
+  DEVICE_HEALTH
+  INTEGRATION_STATUS
+  AUDIT_TRAIL
+  THREAT_INTELLIGENCE
+  CUSTOM
+}
+
+enum ReportFormat {
+  PDF
+  CSV
+  JSON
+  HTML
+}
+
+enum ReportStatus {
+  GENERATING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum ScheduleFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  CUSTOM
+}
+
+// ========================================
+// PHASE 3: WORKFLOW AUTOMATION & ADVANCED ANALYTICS
+// ========================================
+
+// Workflow Playbooks (SOAR-style automation)
+model Playbook {
+  id             String         @id @default(cuid())
+  name           String         @unique
+  description    String?
+  category       String         // Investigation, Containment, Remediation, Enrichment
+  triggerType    TriggerType
+  triggerConditions Json?       // Alert severity, incident type, etc.
+  isActive       Boolean        @default(true)
+  isDefault      Boolean        @default(false)
+  executionCount Int            @default(0)
+  successRate    Float          @default(0)
+  avgDuration    Int?           // Average execution time in seconds
+  mitreMapping   Json?          // MITRE ATT&CK techniques addressed
+  createdBy      String?
+  
+  steps          WorkflowStep[]
+  executions     WorkflowExecution[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("playbooks")
+  @@index([category, isActive])
+}
+
+// Workflow Steps (individual actions in a playbook)
+model WorkflowStep {
+  id            String       @id @default(cuid())
+  playbookId    String
+  stepNumber    Int
+  name          String
+  actionType    ActionType
+  config        Json         // Action-specific configuration
+  parameters    Json?        // Dynamic parameters
+  timeout       Int          @default(300) // Seconds
+  retryCount    Int          @default(0)
+  continueOnFail Boolean     @default(false)
+  
+  playbook      Playbook     @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("workflow_steps")
+  @@unique([playbookId, stepNumber])
+  @@index([playbookId])
+}
+
+// Workflow Executions (history of playbook runs)
+model WorkflowExecution {
+  id              String             @id @default(cuid())
+  playbookId      String
+  triggeredBy     String?            // Manual, Alert, Incident, Schedule
+  triggerContext  Json?              // Alert ID, Incident ID, etc.
+  status          ExecutionStatus
+  startedAt       DateTime           @default(now())
+  completedAt     DateTime?
+  duration        Int?               // Seconds
+  stepResults     Json?              // Results from each step
+  errorMessage    String?
+  executedBy      String?            // User ID if manual
+  
+  playbook        Playbook           @relation(fields: [playbookId], references: [id])
+  
+  @@map("workflow_executions")
+  @@index([playbookId, startedAt])
+  @@index([status, startedAt])
+}
+
+// Workflow Triggers (automated playbook execution rules)
+model WorkflowTrigger {
+  id            String       @id @default(cuid())
+  name          String
+  playbookId    String
+  triggerType   TriggerType
+  conditions    Json         // Matching rules for alerts/incidents
+  enabled       Boolean      @default(true)
+  priority      Int          @default(50) // 1-100, higher = more important
+  lastTriggered DateTime?
+  triggerCount  Int          @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("workflow_triggers")
+  @@index([triggerType, enabled])
+}
+
+// Advanced Analytics Snapshots (time-series data for trends)
+model AnalyticsSnapshot {
+  id                String   @id @default(cuid())
+  snapshotType      String   // hourly, daily, weekly, monthly
+  metricType        String   // alerts, incidents, devices, integrations
+  aggregations      Json     // Count, avg, min, max, percentiles
+  trends            Json?    // Calculated trends and predictions
+  anomalies         Json?    // Detected anomalies
+  comparisonPeriod  Json?    // Compare to previous period
+  
+  timestamp DateTime @default(now())
+
+  @@map("analytics_snapshots")
+  @@index([snapshotType, metricType, timestamp])
+}
+
+// Prediction Models (ML model metadata for analytics)
+model PredictionModel {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  modelType     String   // alert_prediction, incident_forecast, threat_score
+  algorithm     String   // random_forest, time_series, clustering
+  version       String
+  accuracy      Float?
+  trainingData  Json?    // Training parameters and features
+  lastTrained   DateTime?
+  isActive      Boolean  @default(true)
+  predictions   Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("prediction_models")
+}
+
+// Notification Templates (reusable message templates)
+model NotificationTemplate {
+  id            String           @id @default(cuid())
+  name          String           @unique
+  type          NotificationType
+  subject       String?          // For email
+  body          String           @db.Text // Supports variables like {{alertTitle}}
+  channelType   ChannelType?     // If null, applies to all
+  isDefault     Boolean          @default(false)
+  variables     Json?            // List of supported variables
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_templates")
+}
+
+// Enhanced Notification Delivery Log
+model NotificationDelivery {
+  id              String    @id @default(cuid())
+  notificationId  String
+  channelId       String
+  status          DeliveryStatus
+  attempts        Int       @default(1)
+  lastAttemptAt   DateTime  @default(now())
+  deliveredAt     DateTime?
+  errorMessage    String?
+  metadata        Json?     // Channel-specific delivery info
+  
+  createdAt DateTime @default(now())
+
+  @@map("notification_deliveries")
+  @@index([notificationId, status])
+}
+
+// Workflow & Analytics Enums
+enum TriggerType {
+  ALERT_CREATED
+  INCIDENT_CREATED
+  ALERT_SEVERITY
+  INCIDENT_ESCALATED
+  MANUAL
+  SCHEDULED
+  THRESHOLD_EXCEEDED
+  PATTERN_DETECTED
+}
+
+enum ActionType {
+  SEND_NOTIFICATION
+  CREATE_TICKET
+  ENRICH_DATA
+  ISOLATE_ENDPOINT
+  BLOCK_IP
+  DISABLE_USER
+  RUN_QUERY
+  EXECUTE_SCRIPT
+  WAIT
+  CONDITIONAL
+  HUMAN_APPROVAL
+  UPDATE_ALERT
+  ESCALATE_INCIDENT
+  COLLECT_EVIDENCE
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  AWAITING_APPROVAL
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+}
+
+
+// ========================================
+// PHASE 3 TIER 2: INTELLIGENCE & INTEGRATION
+// ========================================
+
+// Threat Intelligence Feeds
+model ThreatFeed {
+  id              String             @id @default(cuid())
+  name            String
+  description     String?
+  feedType        ThreatFeedType
+  sourceUrl       String?
+  provider        String
+  updateFrequency Int                // minutes
+  lastSync        DateTime?
+  status          String             @default("active") // active, paused, error
+  indicators      ThreatIndicator[]
+  config          Json?              // Provider-specific config
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  createdBy       String
+  
+  @@map("threat_feeds")
+  @@index([feedType])
+  @@index([status])
+  @@index([lastSync])
+}
+
+model ThreatIndicator {
+  id              String             @id @default(cuid())
+  feedId          String
+  feed            ThreatFeed         @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  iocType         IOCType
+  value           String
+  confidence      Int                // 0-100
+  severity        String             // critical, high, medium, low
+  firstSeen       DateTime
+  lastSeen        DateTime
+  tags            String[]
+  mitreAttack     String[]
+  threatActors    String[]
+  description     String?
+  context         Json?
+  
+  @@map("threat_indicators")
+  @@index([feedId])
+  @@index([iocType])
+  @@index([severity])
+  @@index([value])
+}
+
+// SOAR Playbook Library
+model PlaybookTemplate {
+  id              String             @id @default(cuid())
+  name            String
+  description     String
+  category        PlaybookCategory
+  useCase         String
+  mitreAttack     String[]
+  steps           Json               // Template steps configuration
+  tags            String[]
+  complexity      String             @default("medium") // low, medium, high
+  estimatedTime   Int?               // minutes
+  downloads       Int                @default(0)
+  rating          Float?             @default(0)
+  author          String
+  version         String             @default("1.0")
+  isPublic        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@map("playbook_templates")
+  @@index([category])
+  @@index([isPublic])
+}
+
+// API Integration Marketplace
+model IntegrationConnector {
+  id              String             @id @default(cuid())
+  name            String
+  description     String
+  category        ConnectorCategory
+  vendor          String
+  iconUrl         String?
+  version         String
+  status          String             @default("available") // available, installed, deprecated
+  capabilities    String[]
+  pricing         String?            // free, paid, enterprise
+  documentation   String?
+  setupGuide      Json?
+  requiredFields  Json               // Configuration fields
+  installed       Boolean            @default(false)
+  installedAt     DateTime?
+  installations   ConnectorInstall[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@map("integration_connectors")
+  @@index([category])
+  @@index([status])
+  @@index([installed])
+}
+
+model ConnectorInstall {
+  id              String                @id @default(cuid())
+  connectorId     String
+  connector       IntegrationConnector  @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  name            String
+  config          Json                  // Encrypted configuration
+  status          String                @default("active") // active, error, disabled
+  lastSync        DateTime?
+  syncFrequency   Int?                  // minutes
+  metrics         Json?                 // Usage metrics
+  installedBy     String
+  installedAt     DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  
+  @@map("connector_installs")
+  @@index([connectorId])
+  @@index([status])
+}
+
+// ========================================
+// USER EXPERIENCE ENHANCEMENTS
+// ========================================
+
+// Custom Dashboard Builder
+model CustomDashboard {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  layout          Json               // Grid layout configuration
+  widgets         DashboardWidget[]
+  isDefault       Boolean            @default(false)
+  isPublic        Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@map("custom_dashboards")
+  @@index([userId])
+  @@index([isDefault])
+}
+
+model DashboardWidget {
+  id              String             @id @default(cuid())
+  dashboardId     String
+  dashboard       CustomDashboard    @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  type            WidgetType
+  title           String
+  config          Json               // Widget-specific configuration
+  position        Json               // { x, y, w, h }
+  dataSource      String?
+  refreshInterval Int?               // seconds
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@map("dashboard_widgets")
+  @@index([dashboardId])
+  @@index([type])
+}
+
+// User Activity Audit Trail
+model UserActivity {
+  id              String             @id @default(cuid())
+  userId          String?
+  user            User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action          String
+  resource        String
+  resourceId      String?
+  method          String?            // GET, POST, PUT, DELETE
+  ipAddress       String?
+  userAgent       String?
+  status          String             // success, failure
+  duration        Int?               // milliseconds
+  changes         Json?              // Before/after for updates
+  metadata        Json?
+  timestamp       DateTime           @default(now())
+  
+  @@map("user_activities")
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+}
+
+// Configuration Backup & Export
+model ConfigBackup {
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  backupType        BackupType
+  data              Json               // Serialized configuration
+  fileSize          Int                // bytes
+  cloudStoragePath  String?            // S3 path for large backups
+  checksum          String
+  version           String
+  createdBy         String
+  createdAt         DateTime           @default(now())
+  restoredAt        DateTime?
+  restoredBy        String?
+  
+  @@map("config_backups")
+  @@index([backupType])
+  @@index([createdAt])
+}
+
+// ========================================
+// PHASE 3 TIER 2 ENUMS
+// ========================================
+
+enum ThreatFeedType {
+  IP_REPUTATION
+  DOMAIN_REPUTATION
+  FILE_HASH
+  URL_REPUTATION
+  CVE_FEED
+  MALWARE_SIGNATURE
+  THREAT_ACTOR
+  ATTACK_PATTERN
+}
+
+enum IOCType {
+  IP_ADDRESS
+  DOMAIN
+  URL
+  FILE_HASH
+  EMAIL
+  REGISTRY_KEY
+  MUTEX
+  USER_AGENT
+}
+
+enum PlaybookCategory {
+  INCIDENT_RESPONSE
+  THREAT_HUNTING
+  COMPLIANCE
+  VULNERABILITY_MANAGEMENT
+  PHISHING
+  MALWARE_ANALYSIS
+  DATA_BREACH
+  INSIDER_THREAT
+  CLOUD_SECURITY
+}
+
+enum ConnectorCategory {
+  SIEM
+  EDR_XDR
+  FIREWALL
+  IDS_IPS
+  CLOUD_SECURITY
+  IDENTITY_PROVIDER
+  TICKETING
+  COMMUNICATION
+  THREAT_INTEL
+  VULNERABILITY_SCANNER
+}
+
+enum WidgetType {
+  METRIC_CARD
+  LINE_CHART
+  BAR_CHART
+  PIE_CHART
+  TABLE
+  ALERT_LIST
+  INCIDENT_LIST
+  HEAT_MAP
+  TIMELINE
+  MAP
+}
+
+enum BackupType {
+  FULL_CONFIG
+  WORKFLOWS
+  INTEGRATIONS
+  DASHBOARDS
+  USERS_ROLES
+  RULES_POLICIES
+}
+
+
+// ============================================
+// SUBSCRIPTION & MONETIZATION MODELS
+// ============================================
+
+model Organization {
+  id                   String             @id @default(cuid())
+  name                 String
+  subscriptionTier     SubscriptionTier   @default(COMMUNITY)
+  subscriptionStatus   SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  subscriptionEndsAt   DateTime?
+  trialEndsAt          DateTime?
+  
+  // Usage limits based on tier
+  maxUsers             Int                @default(1)
+  maxIntegrations      Int                @default(0)
+  maxDevices           Int                @default(10)
+  maxAlerts            Int                @default(100)
+  maxIncidents         Int                @default(10)
+  maxWorkflows         Int                @default(3)
+  maxAIQueries         Int                @default(10)
+  maxThreatFeeds       Int                @default(0)
+  maxDashboards        Int                @default(0)
+  
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  
+  users                User[]
+  usageTracking        UsageTracking[]
+  
+  @@map("organizations")
+}
+
+model UsageTracking {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String?
+  
+  // Usage counters (reset monthly)
+  alertsUsed     Int      @default(0)
+  incidentsUsed  Int      @default(0)
+  aiQueriesUsed  Int      @default(0)
+  reportsUsed    Int      @default(0)
+  
+  // Period tracking
+  periodStart    DateTime @default(now())
+  periodEnd      DateTime
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, periodStart])
+  @@index([organizationId, periodStart])
+  @@map("usage_tracking")
+}
+
+model SubscriptionEvent {
+  id                String   @id @default(cuid())
+  stripeEventId     String   @unique
+  eventType         String
+  customerId        String
+  subscriptionId    String?
+  amount            Int?
+  currency          String?
+  status            String
+  metadata          Json?
+  processed         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  
+  @@index([stripeEventId])
+  @@index([customerId])
+  @@map("subscription_events")
+}

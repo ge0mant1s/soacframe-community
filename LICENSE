@@ -1,0 +1,43 @@
+
+MIT License with IP Protection Clause
+
+Copyright (c) 2025 SOaC Framework
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software for personal or internal business use, subject to the
+following restrictions:
+
+GRANT OF RIGHTS:
+You are permitted to:
+- Use the Software for personal or internal business purposes
+- Modify the Software for your internal use
+- Study and learn from the source code
+- Contribute improvements back to the community
+- Deploy for your organization (up to 100 users)
+
+RESTRICTIONS:
+You may NOT:
+1. Use this Software to create a competing SaaS product
+2. Rebrand this Software and distribute it commercially
+3. Remove or modify attribution and copyright notices
+4. Use the "SOaC Framework" name or logo without permission
+5. Deploy commercially at scale (>100 users) without a commercial license
+
+ATTRIBUTION:
+You must include clear attribution in any public-facing deployment:
+"Powered by SOaC Framework - https://soacframe.io"
+
+COMMERCIAL USE:
+For commercial use at scale or to remove these restrictions, contact:
+licensing@soacframe.io
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+For inquiries: legal@soacframe.io
