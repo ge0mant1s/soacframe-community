@@ -1,0 +1,42 @@
+title: SPAN/ERSPAN Session Configuration Changes
+id: st-002-span-changes
+status: experimental
+description: Detects creation or modification of SPAN/RSPAN/ERSPAN sessions that could be used for traffic mirroring and exfiltration
+references:
+    - https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-239a
+author: SOaC Community
+date: 2025/01/05
+tags:
+    - attack.collection
+    - attack.t1040
+    - attack.t1020
+    - campaign.salt_typhoon
+logsource:
+    product: network_device
+    service: configuration
+detection:
+    selection:
+        EventType: 'config_change'
+        Command|contains:
+            - 'monitor session'
+            - 'monitor capture'
+            - 'span'
+            - 'rspan'
+            - 'erspan'
+    filter_sensitive_vlans:
+        SourceVLAN|contains:
+            - 'management'
+            - 'production'
+            - 'dmz'
+    condition: selection and filter_sensitive_vlans
+falsepositives:
+    - Legitimate network troubleshooting
+    - Approved monitoring configurations
+level: high
+fields:
+    - DeviceHostname
+    - Command
+    - SourceVLAN
+    - DestinationIP
+    - User
+    - Timestamp

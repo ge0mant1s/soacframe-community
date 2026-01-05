@@ -1,0 +1,40 @@
+title: Cisco Guest Shell Container Activation
+id: st-003-guest-shell
+status: experimental
+description: Detects activation or use of Cisco Guest Shell containers, which Salt Typhoon used as staging grounds for tools
+references:
+    - https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-239a
+author: SOaC Community
+date: 2025/01/05
+tags:
+    - attack.execution
+    - attack.t1059.004
+    - attack.persistence
+    - attack.t1543.003
+    - campaign.salt_typhoon
+logsource:
+    product: cisco
+    service: ios
+detection:
+    selection_enable:
+        EventType: 'config_change'
+        Command|contains:
+            - 'guestshell enable'
+            - 'guestshell run'
+    selection_execution:
+        EventType: 'command_execution'
+        Command|contains:
+            - 'guestshell'
+        Command|contains|all:
+            - 'python'
+            - '.py'
+    condition: selection_enable or selection_execution
+falsepositives:
+    - Legitimate automation scripts
+    - Approved container-based management tools
+level: high
+fields:
+    - DeviceHostname
+    - Command
+    - User
+    - Timestamp

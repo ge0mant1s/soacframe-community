@@ -1,0 +1,52 @@
+// Salt Typhoon Detection Queries - KQL (Microsoft Sentinel)
+
+// 1. Non-Standard Management Ports on Edge Devices
+CommonSecurityLog
+| where DeviceVendor == "Cisco"
+| where Activity contains "config_change"
+| where AdditionalExtensions contains "ip http" or AdditionalExtensions contains "ip ssh"
+| extend Port = extract(@"port (\d+)", 1, AdditionalExtensions)
+| where Port !in ("22", "80", "443")
+| where DeviceCustomString1 in ("internet-edge", "provider-edge", "vpn-gateway")  // Device role
+| project TimeGenerated, DeviceHostname, SourceIP, AdditionalExtensions, Port
+| summarize count() by DeviceHostname, Port, bin(TimeGenerated, 1h)
+
+// 2. SPAN/ERSPAN Session Configuration Changes
+CommonSecurityLog
+| where DeviceVendor == "Cisco"
+| where Activity contains "config_change"
+| where AdditionalExtensions has_any ("monitor session", "span", "rspan", "erspan")
+| project TimeGenerated, DeviceHostname, SourceUserName, AdditionalExtensions
+| extend SourceVLAN = extract(@"source vlan (\d+)", 1, AdditionalExtensions)
+| extend DestIP = extract(@"destination ip (\S+)", 1, AdditionalExtensions)
+
+// 3. Cisco Guest Shell Activation
+CommonSecurityLog
+| where DeviceVendor == "Cisco"
+| where AdditionalExtensions has_any ("guestshell enable", "guestshell run")
+| project TimeGenerated, DeviceHostname, SourceUserName, AdditionalExtensions
+
+// 4. SNMP SET from Untrusted Hosts
+CommonSecurityLog
+| where DeviceVendor in ("Cisco", "Palo Alto Networks")
+| where Activity == "snmp_set"
+| where SourceIP !startswith "10.0.0."  // Replace with your management networks
+| where SourceIP !startswith "172.16."
+| where SourceIP !startswith "192.168.1."
+| project TimeGenerated, DeviceHostname, SourceIP, AdditionalExtensions
+| summarize count() by SourceIP, DeviceHostname, bin(TimeGenerated, 1h)
+
+// 5. Suspicious ACL Modifications (ACL 10, 20, 50)
+CommonSecurityLog
+| where DeviceVendor == "Cisco"
+| where Activity contains "config_change"
+| where AdditionalExtensions has_any ("access-list 10", "access-list 20", "access-list 50")
+| project TimeGenerated, DeviceHostname, SourceUserName, AdditionalExtensions
+
+// 6. Tunnel Creation on Edge Devices
+CommonSecurityLog
+| where DeviceVendor == "Cisco"
+| where Activity contains "config_change"
+| where AdditionalExtensions has_any ("interface Tunnel", "crypto ipsec", "gre tunnel")
+| where DeviceCustomString1 in ("internet-edge", "provider-edge")
+| project TimeGenerated, DeviceHostname, SourceUserName, AdditionalExtensions

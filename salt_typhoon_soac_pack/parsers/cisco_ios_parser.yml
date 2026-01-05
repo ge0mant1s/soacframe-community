@@ -1,0 +1,28 @@
+name: Cisco IOS/NX-OS Log Parser
+description: Normalizes Cisco IOS and NX-OS syslog messages for detection rules
+version: 1.0
+patterns:
+  - name: config_change
+    regex: '%SYS-5-CONFIG_I: Configured from (\S+) by (\S+)'
+    fields:
+      source: $1
+      user: $2
+      event_type: config_change
+
+  - name: snmp_auth_fail
+    regex: '%SNMP-3-AUTHFAIL: Authentication failure for SNMP req from host (\S+)'
+    fields:
+      source_ip: $1
+      event_type: snmp_auth_fail
+
+  - name: ssh_login
+    regex: '%SEC_LOGIN-5-LOGIN_SUCCESS: Login Success \[user: (\S+)\] \[Source: (\S+)\]'
+    fields:
+      user: $1
+      source_ip: $2
+      event_type: ssh_login
+
+normalization:
+  timestamp_format: "%b %d %H:%M:%S"
+  timezone: UTC
+  device_hostname_field: hostname

@@ -1,0 +1,36 @@
+title: SNMP SET from Untrusted Host
+id: st-004-snmp-set
+status: experimental
+description: Detects SNMP SET operations from hosts outside approved management networks
+references:
+    - https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-239a
+author: SOaC Community
+date: 2025/01/05
+tags:
+    - attack.discovery
+    - attack.t1082
+    - attack.t1590
+    - campaign.salt_typhoon
+logsource:
+    product: network_device
+    service: snmp
+detection:
+    selection:
+        EventType: 'snmp_set'
+    filter_trusted:
+        SourceIP|startswith:
+            - '10.0.0.'      # Replace with your management networks
+            - '172.16.'
+            - '192.168.1.'
+    condition: selection and not filter_trusted
+falsepositives:
+    - New management hosts not yet in allowlist
+    - Third-party monitoring tools
+level: medium
+fields:
+    - DeviceHostname
+    - SourceIP
+    - OID
+    - Value
+    - Community
+    - Timestamp

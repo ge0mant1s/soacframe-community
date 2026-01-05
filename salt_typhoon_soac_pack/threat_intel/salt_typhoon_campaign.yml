@@ -1,0 +1,119 @@
+campaign:
+  name: Salt Typhoon
+  aliases:
+    - OPERATOR PANDA
+    - Earth Estries
+    - FamousSparrow
+    - GhostEmperor
+
+  attribution:
+    country: China
+    motivation: espionage
+    confidence: high
+
+  timeline:
+    first_observed: 2021
+    last_observed: 2025-01
+    status: active
+
+  targets:
+    sectors:
+      - telecommunications
+      - government
+      - transportation
+      - lodging
+      - military
+    regions:
+      - United States
+      - Europe
+      - Asia-Pacific
+
+  ttps:
+    initial_access:
+      - technique: T1190
+        name: Exploit Public-Facing Application
+        details: |
+          CVE-2024-20931 (Cisco IOS XE)
+          CVE-2024-21887 (Ivanti Connect Secure)
+          CVE-2023-46805 (Ivanti Connect Secure)
+          CVE-2024-21893 (Ivanti Connect Secure)
+
+      - technique: T1133
+        name: External Remote Services
+        details: Compromise of VPN gateways and remote access infrastructure
+
+    persistence:
+      - technique: T1505.003
+        name: Web Shell
+        details: HTTP/HTTPS services on non-standard ports (18xxx)
+
+      - technique: T1543.003
+        name: Create or Modify System Process
+        details: Cisco Guest Shell containers for persistent access
+
+      - technique: T1098
+        name: Account Manipulation
+        details: Modification of ACLs (10, 20, 50) to allow specific IPs
+
+    discovery:
+      - technique: T1082
+        name: System Information Discovery
+        details: Extensive SNMP GET/WALK operations
+
+      - technique: T1590
+        name: Gather Victim Network Information
+        details: Enumeration of routing tables, interfaces, AAA config
+
+    collection:
+      - technique: T1040
+        name: Network Sniffing
+        details: SPAN/RSPAN/ERSPAN session configuration
+
+      - technique: T1005
+        name: Data from Local System
+        details: PCAP collection via custom tools
+
+    command_and_control:
+      - technique: T1572
+        name: Protocol Tunneling
+        details: GRE and IPsec tunnels for C2
+
+      - technique: T1090
+        name: Proxy
+        details: Multi-hop proxies (STOWAWAY)
+
+    exfiltration:
+      - technique: T1020
+        name: Automated Exfiltration
+        details: Custom Golang SFTP tools (cmd1, cmd3, new2)
+
+  indicators:
+    tools:
+      - siet.py
+      - cmd1
+      - cmd3
+      - new2
+      - STOWAWAY
+
+    behaviors:
+      - Non-standard management ports (18xxx for HTTPS, xxx22 for SSH)
+      - ACL modifications (access-list 10, 20, 50)
+      - Guest Shell container deployment
+      - SPAN/ERSPAN session creation
+      - Weak credential usage (cisco/cisco)
+      - Out-of-band tunnel creation
+
+  mitigations:
+    - Patch all CVEs listed in AA25-239A
+    - Disable unused management services
+    - Enforce SNMPv3 with strong authentication
+    - Monitor and alert on SPAN/ERSPAN changes
+    - Implement strict ACL change management
+    - Disable Guest Shell unless required
+    - Use non-standard ports only with strong justification
+    - Enable comprehensive logging
+    - Implement network segmentation
+
+  references:
+    - https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-239a
+    - https://www.cisa.gov/sites/default/files/2025-01/aa25-239a-stix.xml

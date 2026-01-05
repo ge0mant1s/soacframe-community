@@ -1,0 +1,28 @@
+// Salt Typhoon Detection Queries - Elastic EQL
+
+// 1. Non-Standard Management Ports on Edge Devices
+configuration where event.action == "config_change"
+  and (process.command_line like~ "*ip http*" or process.command_line like~ "*ip ssh*")
+  and host.role in ("internet-edge", "provider-edge", "vpn-gateway")
+
+// 2. SPAN/ERSPAN Session Configuration
+configuration where event.action == "config_change"
+  and process.command_line like~ "*monitor session*"
+
+// 3. Guest Shell Activation
+process where process.name == "guestshell"
+  or process.command_line like~ "*guestshell enable*"
+
+// 4. SNMP SET from External Sources
+network where event.action == "snmp_set"
+  and not cidr_match(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+
+// 5. Suspicious ACL Changes
+sequence by host.hostname
+  [configuration where process.command_line like~ "*access-list 10*"]
+  [configuration where process.command_line like~ "*permit*"]
+
+// 6. Tunnel Interface Creation
+configuration where event.action == "config_change"
+  and (process.command_line like~ "*interface Tunnel*" or process.command_line like~ "*crypto ipsec*")
+  and host.role in ("internet-edge", "provider-edge")

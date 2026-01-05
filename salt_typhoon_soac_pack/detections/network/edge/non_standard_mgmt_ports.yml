@@ -1,0 +1,44 @@
+title: Non-Standard Management Ports on Edge Devices
+id: st-001-edge-mgmt-ports
+status: experimental
+description: Detects HTTP/HTTPS or SSH services enabled on non-standard ports on internet-facing edge devices, consistent with Salt Typhoon tradecraft
+references:
+    - https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-239a
+author: SOaC Community
+date: 2025/01/05
+tags:
+    - attack.persistence
+    - attack.t1505.003
+    - campaign.salt_typhoon
+    - campaign.operator_panda
+logsource:
+    product: network_device
+    service: configuration
+detection:
+    selection_http:
+        EventType: 'config_change'
+        Command|contains:
+            - 'ip http server'
+            - 'ip http secure-server'
+        Port|re: '^(18[0-9]{3}|[2-9][0-9]{4})$'  # Non-standard ports 18xxx or higher
+    selection_ssh:
+        EventType: 'config_change'
+        Command|contains: 'ip ssh'
+        Port|re: '^(?!22$)[0-9]{2,5}$'  # Any port except 22
+    filter_device_role:
+        DeviceRole:
+            - 'internet-edge'
+            - 'provider-edge'
+            - 'vpn-gateway'
+    condition: (selection_http or selection_ssh) and filter_device_role
+falsepositives:
+    - Legitimate administrative changes during maintenance windows
+    - Approved non-standard port configurations
+level: high
+fields:
+    - DeviceHostname
+    - DeviceIP
+    - Command
+    - Port
+    - User
+    - Timestamp

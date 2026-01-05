@@ -1,0 +1,42 @@
+# Salt Typhoon Detection Queries - Splunk SPL
+
+# 1. Non-Standard Management Ports on Edge Devices
+index=network sourcetype=cisco:ios
+| search "ip http" OR "ip ssh"
+| rex field=_raw "port (?<port>\d+)"
+| where port!="22" AND port!="80" AND port!="443"
+| search device_role IN ("internet-edge", "provider-edge", "vpn-gateway")
+| stats count by host, port, user
+| where count > 0
+
+# 2. SPAN/ERSPAN Session Configuration Changes
+index=network sourcetype=cisco:ios
+| search "monitor session" OR "span" OR "rspan" OR "erspan"
+| rex field=_raw "source vlan (?<source_vlan>\d+)"
+| rex field=_raw "destination ip (?<dest_ip>\S+)"
+| table _time, host, user, source_vlan, dest_ip, _raw
+
+# 3. Cisco Guest Shell Activation
+index=network sourcetype=cisco:ios
+| search "guestshell enable" OR "guestshell run"
+| table _time, host, user, _raw
+| sort -_time
+
+# 4. SNMP SET from Untrusted Hosts
+index=network sourcetype=cisco:ios OR sourcetype=paloalto:traffic
+| search event_type=snmp_set
+| where NOT (src_ip="10.0.0.*" OR src_ip="172.16.*" OR src_ip="192.168.1.*")
+| stats count by src_ip, host
+| where count > 0
+
+# 5. Suspicious ACL Modifications
+index=network sourcetype=cisco:ios
+| search "access-list 10" OR "access-list 20" OR "access-list 50"
+| table _time, host, user, _raw
+| sort -_time
+
+# 6. Tunnel Creation on Edge Devices
+index=network sourcetype=cisco:ios
+| search ("interface Tunnel" OR "crypto ipsec" OR "gre tunnel")
+| search device_role IN ("internet-edge", "provider-edge")
+| table _time, host, user, _raw

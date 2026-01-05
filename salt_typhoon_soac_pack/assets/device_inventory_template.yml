@@ -1,0 +1,40 @@
+# Device Inventory Template
+# Populate this with your actual network devices
+
+devices:
+  - hostname: edge-router-01
+    ip: 10.0.1.1
+    role: internet-edge
+    vendor: cisco
+    model: ASR1000
+    os_version: IOS-XE 17.6.1
+    location: datacenter-1
+    criticality: high
+    management_ips:
+      - 10.0.1.1
+    snmp_enabled: true
+
+  - hostname: core-switch-01
+    ip: 10.0.2.1
+    role: core
+    vendor: cisco
+    model: Catalyst 9500
+    os_version: IOS-XE 17.9.1
+    location: datacenter-1
+    criticality: critical
+    management_ips:
+      - 10.0.2.1
+    snmp_enabled: true
+
+  - hostname: vpn-gateway-01
+    ip: 10.0.3.1
+    role: vpn-gateway
+    vendor: paloalto
+    model: PA-5220
+    os_version: PAN-OS 11.0.1
+    location: datacenter-1
+    criticality: high
+    management_ips:
+      - 10.0.3.1
+
+# Add your devices here following the same structure

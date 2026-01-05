@@ -1,0 +1,111 @@
+name: Salt Typhoon Suspected Edge Device Compromise
+id: pb-st-001
+version: 1.0
+description: Response playbook for suspected Salt Typhoon compromise of edge router/firewall
+severity: critical
+tags:
+  - salt_typhoon
+  - edge_device
+  - telecom
+
+trigger:
+  detection_rules:
+    - st-001-edge-mgmt-ports
+    - st-002-span-changes
+    - st-003-guest-shell
+
+steps:
+  - id: isolate
+    name: Isolate Device (if possible)
+    type: manual
+    description: |
+      If device can be isolated without major service impact:
+      - Remove from production routing
+      - Disable external management access
+      - Maintain console/OOB access for investigation
+
+  - id: capture_config
+    name: Capture Running Configuration
+    type: automated
+    commands:
+      - show running-config
+      - show startup-config
+      - show version
+      - show users
+      - show ip access-lists
+      - show monitor session all
+    output: /evidence/{{device_hostname}}/config_{{timestamp}}.txt
+
+  - id: check_acls
+    name: Check for Suspicious ACLs
+    type: automated
+    description: Look for ACLs 10, 20, 50 (mentioned in AA25-239A)
+    commands:
+      - show ip access-lists 10
+      - show ip access-lists 20
+      - show ip access-lists 50
+
+  - id: check_guest_shell
+    name: Check Guest Shell Status
+    type: automated
+    commands:
+      - show guestshell
+      - guestshell run ls -la /home/guestshell
+      - guestshell run ps aux
+
+  - id: check_tunnels
+    name: Check for Suspicious Tunnels
+    type: automated
+    commands:
+      - show ip interface brief | include Tunnel
+      - show crypto ipsec sa
+      - show ip route | include Tunnel
+
+  - id: verify_snmp
+    name: Verify SNMP Configuration
+    type: automated
+    commands:
+      - show snmp community
+      - show snmp user
+      - show snmp group
+
+  - id: collect_logs
+    name: Collect Historical Logs
+    type: manual
+    description: |
+      Collect logs from SIEM/NMS for this device:
+      - Last 90 days of config changes
+      - Authentication logs
+      - SNMP access logs
+      - Network flow data (if available)
+
+  - id: coordinate_noc
+    name: Coordinate with NOC
+    type: manual
+    description: |
+      - Notify NOC of suspected compromise
+      - Request traffic analysis for device
+      - Check for unusual traffic patterns
+      - Identify potential lateral movement
+
+  - id: patch_or_rebuild
+    name: Patch or Rebuild Device
+    type: manual
+    description: |
+      Based on findings:
+      - If clean: patch to latest version, harden config
+      - If compromised: rebuild from known-good image
+      - Apply hardening baseline from assets/hardening_baseline.yml
+
+escalation:
+  - condition: guest_shell_found
+    action: escalate_to_ir_team
+  - condition: unknown_tunnels_found
+    action: escalate_to_ir_team
+  - condition: acl_10_20_50_modified
+    action: escalate_to_ir_team
+
+documentation:
+  - Ticket in ITSM with all evidence
+  - Update CMDB with device status
+  - Document lessons learned in Git repo

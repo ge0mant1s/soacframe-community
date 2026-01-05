@@ -1,0 +1,86 @@
+# Network Device Hardening Baseline
+# Based on AA25-239A recommendations
+
+baseline:
+  name: Salt Typhoon Hardening
+  version: 1.0
+  applies_to:
+    - cisco_ios
+    - cisco_nxos
+    - paloalto_panos
+
+  requirements:
+    management:
+      - name: Disable HTTP Server
+        check: no ip http server
+        severity: high
+
+      - name: Use HTTPS Only on Standard Port
+        check: ip http secure-server (port 443 only)
+        severity: high
+
+      - name: SSH on Standard Port Only
+        check: ip ssh port 22
+        severity: medium
+
+      - name: Disable Guest Shell
+        check: no guestshell enable
+        severity: high
+        exceptions:
+          - Approved automation use cases with documented justification
+
+    snmp:
+      - name: Use SNMPv3 Only
+        check: snmp-server group <name> v3 priv
+        severity: critical
+
+      - name: No Default Community Strings
+        check: no snmp-server community public
+        severity: critical
+
+      - name: Restrict SNMP Access
+        check: snmp-server community <name> RO <acl>
+        severity: high
+
+    acls:
+      - name: Document All ACLs
+        check: All ACLs must have description
+        severity: medium
+
+      - name: Review ACLs 10, 20, 50
+        check: Specific review of these ACL numbers
+        severity: high
+
+      - name: No Overly Permissive Rules
+        check: No 'permit ip any any' without justification
+        severity: high
+
+    monitoring:
+      - name: Enable Logging
+        check: logging buffered 51200 informational
+        severity: high
+
+      - name: Send Logs to SIEM
+        check: logging host <siem-ip>
+        severity: critical
+
+      - name: Log Config Changes
+        check: archive log config
+        severity: high
+
+      - name: Monitor SPAN Sessions
+        check: Alert on 'monitor session' config changes
+        severity: high
+
+    authentication:
+      - name: No Default Credentials
+        check: No cisco/cisco or admin/admin
+        severity: critical
+
+      - name: Use AAA
+        check: aaa new-model
+        severity: high
+
+      - name: Strong Password Policy
+        check: Minimum 12 characters, complexity requirements
+        severity: high

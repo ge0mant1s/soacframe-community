@@ -1,0 +1,31 @@
+name: Palo Alto PAN-OS Log Parser
+description: Normalizes PAN-OS threat and traffic logs
+version: 1.0
+patterns:
+  - name: threat_log
+    csv_fields:
+      - receive_time
+      - serial
+      - type
+      - threat_id
+      - src_ip
+      - dst_ip
+      - src_port
+      - dst_port
+      - action
+
+  - name: config_log
+    csv_fields:
+      - receive_time
+      - serial
+      - type
+      - admin
+      - client
+      - result
+      - path
+      - command
+
+normalization:
+  timestamp_field: receive_time
+  source_ip_field: src_ip
+  destination_ip_field: dst_ip
