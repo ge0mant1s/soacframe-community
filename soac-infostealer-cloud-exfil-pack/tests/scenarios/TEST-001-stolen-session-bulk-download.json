@@ -1,0 +1,72 @@
+{
+  "scenario_id": "TEST-001",
+  "name": "Stolen Session → Bulk Download",
+  "description": "Simulates infostealer-driven compromise followed by M365 bulk download",
+  "timeline": [
+    {
+      "t": 0,
+      "event_type": "identity_signin",
+      "source": "entra_id",
+      "data": {
+        "UserPrincipalName": "john.doe@company.com",
+        "IPAddress": "203.0.113.45",
+        "DeviceId": "new-device-12345",
+        "Country": "Romania",
+        "ResultType": 0,
+        "AppDisplayName": "Office 365 SharePoint Online"
+      },
+      "expected_detection": "IDN-ENTRA-NEW-CONTEXT-BEHAVIORAL"
+    },
+    {
+      "t": 300,
+      "event_type": "saas_file_download",
+      "source": "m365",
+      "data": {
+        "UserId": "john.doe@company.com",
+        "Operation": "FileDownloaded",
+        "Count": 150,
+        "UserBaseline": {
+          "AvgOps": 12,
+          "StdDevOps": 5,
+          "Threshold": 27
+        }
+      },
+      "expected_detection": "SAAS-M365-BEHAVIORAL-EXFIL"
+    },
+    {
+      "t": 600,
+      "event_type": "correlation",
+      "expected_detection": "CORR-SENTINEL-INFOSTEALER-EXFIL",
+      "expected_severity": "HIGH",
+      "expected_playbook_trigger": "PB-INFOSTEALER-CONTAIN-BEHAVIORAL"
+    }
+  ],
+  "assertions": [
+    {
+      "type": "detection_fired",
+      "detection_name": "IDN-ENTRA-NEW-CONTEXT-BEHAVIORAL",
+      "within_seconds": 60
+    },
+    {
+      "type": "detection_fired",
+      "detection_name": "SAAS-M365-BEHAVIORAL-EXFIL",
+      "within_seconds": 60
+    },
+    {
+      "type": "correlation_fired",
+      "correlation_name": "CORR-SENTINEL-INFOSTEALER-EXFIL",
+      "within_seconds": 120
+    },
+    {
+      "type": "playbook_triggered",
+      "playbook_name": "PB-INFOSTEALER-CONTAIN-BEHAVIORAL",
+      "within_seconds": 180
+    },
+    {
+      "type": "action_executed",
+      "action_name": "revoke_sessions",
+      "target": "entra_id",
+      "within_seconds": 600
+    }
+  ]
+}

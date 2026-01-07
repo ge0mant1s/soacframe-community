@@ -1,0 +1,53 @@
+# Test Assertions
+# Defines expected behavior for detection and response testing
+
+test_suite: UC-INFOSTEALER-CLOUD-EXFIL-BEHAVIORAL
+
+assertions:
+  detection_precision:
+    - name: "No false positives on normal user behavior"
+      condition: "User with consistent behavior (same device, IP, geo) should NOT trigger"
+      test_data: "tests/scenarios/normal-user-activity.json"
+
+    - name: "Detect new context + behavioral spike"
+      condition: "New device/IP + downloads > (mean + 3σ) should trigger HIGH severity"
+      test_data: "tests/scenarios/TEST-001-stolen-session-bulk-download.json"
+
+    - name: "No alert on new device alone"
+      condition: "New device without behavioral anomaly should NOT trigger correlation"
+      test_data: "tests/scenarios/new-device-normal-activity.json"
+
+    - name: "No alert on behavioral spike alone"
+      condition: "Behavioral spike from known device should trigger lower severity (not HIGH)"
+      test_data: "tests/scenarios/known-device-spike.json"
+
+  playbook_execution:
+    - name: "Session revocation within SLA"
+      condition: "revoke_sessions action must execute within 10 minutes of detection"
+      sla_minutes: 10
+
+    - name: "Endpoint isolation when signal present"
+      condition: "If endpoint signal exists, isolate_host must execute within 15 minutes"
+      sla_minutes: 15
+
+    - name: "External shares removed"
+      condition: "All external shares created in correlation window must be removed"
+      verification: "Query M365/GDrive/Box APIs post-playbook"
+
+  coverage:
+    - name: "MITRE ATT&CK coverage"
+      condition: "All techniques (T1539, T1078, T1567) must have >= 1 detection"
+      techniques: [T1539, T1555, T1078, T1567, T1530]
+
+    - name: "Multi-environment coverage"
+      condition: "Detections must exist for all identity providers"
+      environments: [entra, okta, google]
+
+  baseline_quality:
+    - name: "Sufficient baseline data"
+      condition: "Users must have >= 3 sign-ins in 14d baseline period"
+      minimum_events: 3
+
+    - name: "Behavioral threshold accuracy"
+      condition: "Mean + 3σ should capture 99.7% of normal behavior (assuming normal distribution)"
+      statistical_confidence: 0.997

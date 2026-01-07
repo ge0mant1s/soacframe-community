@@ -1,0 +1,68 @@
+# Data Sources Mapping
+# Maps required telemetry to specific log sources per environment
+
+use_case: UC-INFOSTEALER-CLOUD-EXFIL-BEHAVIORAL
+
+identity_telemetry:
+  entra_id:
+    - log_source: "SigninLogs"
+      fields: [TimeGenerated, UserPrincipalName, IPAddress, DeviceDetail, LocationDetails, ResultType, ConditionalAccessStatus]
+      retention: "90 days minimum"
+    - log_source: "AADNonInteractiveUserSignInLogs"
+      fields: [TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName]
+      retention: "90 days minimum"
+
+  okta:
+    - log_source: "Okta System Log"
+      event_types: [user.session.start, user.authentication.sso]
+      fields: [actor.alternateId, client.ipAddress, client.device, client.geographicalContext, outcome.result]
+      retention: "90 days minimum"
+
+  google:
+    - log_source: "Google Workspace Admin Logs"
+      event_types: [login, login_success]
+      fields: [actor.email, ipAddress, events.parameters.device_id, events.parameters.login_challenge_method]
+      retention: "90 days minimum"
+
+endpoint_telemetry:
+  mde:
+    - log_source: "DeviceProcessEvents"
+      fields: [Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, InitiatingProcessFileName, SHA256]
+      retention: "30 days minimum"
+
+  crowdstrike:
+    - log_source: "ProcessRollup2"
+      fields: [timestamp, ComputerName, UserName, FileName, CommandLine, ParentBaseFileName, SHA256HashData]
+      retention: "30 days minimum"
+
+  sentinelone:
+    - log_source: "Deep Visibility Events"
+      event_types: [process]
+      fields: [timestamp, endpoint.name, user.name, process.name, process.cmdline, process.parent.name, process.sha256]
+      retention: "30 days minimum"
+
+saas_telemetry:
+  m365:
+    - log_source: "OfficeActivity (Unified Audit Log)"
+      operations: [FileDownloaded, FileAccessed, FileSyncDownloadedFull, SharingSet, SharingInvitationCreated]
+      fields: [TimeGenerated, UserId, Operation, SourceFileName, ClientIP]
+      retention: "90 days minimum"
+
+  google_drive:
+    - log_source: "Google Workspace Drive Logs"
+      event_types: [download, change_user_access, share]
+      fields: [time, actor.email, doc_title, visibility, target_user]
+      retention: "90 days minimum"
+
+  box:
+    - log_source: "Box Enterprise Events"
+      event_types: [DOWNLOAD, SHARE, COLLABORATION_INVITE]
+      fields: [created_at, created_by.login, source.name, ip_address]
+      retention: "90 days minimum"
+
+cloud_telemetry:
+  aws:
+    - log_source: "CloudTrail"
+      event_names: [ConsoleLogin, GetObject, ListObjectsV2, AssumeRole]
+      fields: [eventTime, userIdentity.principalId, sourceIPAddress, eventName, requestParameters, responseElements]
+      retention: "90 days minimum"

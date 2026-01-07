@@ -1,0 +1,55 @@
+# Correlation Rule: Infostealer → Cloud Exfil (Behavioral Precision)
+# Platform: Microsoft Sentinel
+# Language: KQL
+# Precision: Requires 2+ signals within 60 minutes
+
+let correlationWindow = 60m;
+let minFloor = 20;
+
+// Signal 1: Identity - New context sign-in
+let identitySignal = 
+    SigninLogs
+    | where TimeGenerated > ago(correlationWindow)
+    | where ResultType == 0
+    | join kind=leftouter (
+        SigninLogs
+        | where TimeGenerated between (ago(14d) .. ago(1h))
+        | summarize KnownContext = make_set(strcat(IPAddress, "|", DeviceDetail.deviceId)) by UserPrincipalName
+    ) on UserPrincipalName
+    | extend CurrentContext = strcat(IPAddress, "|", DeviceDetail.deviceId)
+    | where CurrentContext !in (KnownContext)
+    | project SigninTime=TimeGenerated, UserPrincipalName, IPAddress, DeviceId=DeviceDetail.deviceId;
+
+// Signal 2: SaaS - Behavioral anomaly in M365
+let saasSignal = 
+    OfficeActivity
+    | where TimeGenerated > ago(correlationWindow)
+    | where Operation in~ ("FileDownloaded", "FileAccessed", "FileSyncDownloadedFull", "SharingSet")
+    | summarize CurrentOps = count() by UserId
+    | join kind=inner (
+        OfficeActivity
+        | where TimeGenerated between (ago(14d) .. ago(1h))
+        | summarize DailyOps = count() by UserId, bin(TimeGenerated, 1d)
+        | summarize AvgOps = avg(DailyOps), StdDevOps = stdev(DailyOps) by UserId
+        | extend Threshold = AvgOps + (3 * StdDevOps)
+    ) on UserId
+    | where CurrentOps > Threshold and CurrentOps >= minFloor
+    | project UserId, CurrentOps, Threshold;
+
+// Correlation: Identity + SaaS within 60 minutes
+identitySignal
+| join kind=inner saasSignal on $left.UserPrincipalName == $right.UserId
+| extend 
+    Severity = "HIGH",
+    IncidentName = "Infostealer → Cloud Portal Exfiltration (Behavioral)",
+    MITRE_Techniques = "T1539, T1078, T1567"
+| project 
+    SigninTime,
+    UserPrincipalName,
+    IPAddress,
+    DeviceId,
+    CurrentOps,
+    Threshold,
+    Severity,
+    IncidentName,
+    MITRE_Techniques

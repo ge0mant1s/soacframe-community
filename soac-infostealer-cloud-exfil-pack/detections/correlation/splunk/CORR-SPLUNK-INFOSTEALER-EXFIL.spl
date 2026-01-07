@@ -1,0 +1,28 @@
+# Correlation Rule: Infostealer → Cloud Exfil (Behavioral Precision)
+# Platform: Splunk
+# Language: SPL
+# Precision: Requires 2+ signals within 60 minutes
+
+## SPL Query
+
+```spl
+| multisearch 
+    [search index=identity (eventType="user.session.start" OR EventType="SignIn") outcome.result="SUCCESS" OR ResultType=0
+    | eval context=coalesce(client.ipAddress, IPAddress)."|".coalesce(client.device, DeviceId)
+    | eventstats dc(context) as baseline_contexts by user
+    | where baseline_contexts=1
+    | eval signal="identity"
+    | table _time, user, ip, device, signal]
+    [search index=saas (Operation="FileDownloaded" OR event_name="download" OR event_type="DOWNLOAD")
+    | bin _time span=1d
+    | stats count as daily_ops by user, _time
+    | eventstats avg(daily_ops) as avg_ops, stdev(daily_ops) as stddev_ops by user
+    | eval threshold = avg_ops + (3 * stddev_ops)
+    | where daily_ops > threshold AND daily_ops >= 20
+    | eval signal="saas"
+    | table _time, user, daily_ops, threshold, signal]
+| transaction user maxspan=60m
+| where mvcount(signal) >= 2
+| eval severity="HIGH", incident="Infostealer → Cloud Portal Exfiltration (Behavioral)"
+| table _time, user, ip, device, daily_ops, threshold, severity, incident
+```

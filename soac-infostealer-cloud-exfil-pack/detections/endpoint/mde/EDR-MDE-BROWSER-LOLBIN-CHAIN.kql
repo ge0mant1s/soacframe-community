@@ -1,0 +1,38 @@
+# Detection: MDE - Browser Spawns Suspicious Child Process
+# Platform: Microsoft Defender for Endpoint (Advanced Hunting)
+# Language: KQL
+# Precision: High-confidence LOLBin chains from browser
+
+let detectionWindow = 1h;
+let suspiciousBrowserChildren = dynamic([
+    "powershell.exe", "cmd.exe", "wscript.exe", "cscript.exe",
+    "rundll32.exe", "mshta.exe", "regsvr32.exe", "reg.exe",
+    "bitsadmin.exe", "certutil.exe", "msiexec.exe"
+]);
+let suspiciousCommandPatterns = dynamic([
+    "-enc", "-e ", "-w hidden", "FromBase64String", "iwr ", "curl ",
+    "Invoke-WebRequest", "Invoke-Expression", "DownloadString",
+    "bitsadmin", "schtasks", "/create", "reg add", "HKCU\Software"
+]);
+
+DeviceProcessEvents
+| where Timestamp > ago(detectionWindow)
+| where InitiatingProcessFileName in~ ("chrome.exe", "msedge.exe", "firefox.exe", "brave.exe")
+| where FileName in~ (suspiciousBrowserChildren)
+| where ProcessCommandLine has_any (suspiciousCommandPatterns)
+| extend 
+    Severity = "HIGH",
+    DetectionName = "EDR-MDE-BROWSER-LOLBIN-CHAIN",
+    ThreatIndicator = "Infostealer delivery or credential theft behavior"
+| project 
+    Timestamp,
+    DeviceName,
+    AccountName,
+    InitiatingProcessFileName,
+    InitiatingProcessCommandLine,
+    FileName,
+    ProcessCommandLine,
+    SHA256,
+    Severity,
+    DetectionName,
+    ThreatIndicator

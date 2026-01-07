@@ -1,0 +1,139 @@
+id: PB-INFOSTEALER-CONTAIN-BEHAVIORAL
+name: "Contain Infostealer → Cloud Portal Exfil (Behavioral Precision)"
+version: "1.0.0"
+trigger: UC-INFOSTEALER-CLOUD-EXFIL-BEHAVIORAL
+sla:
+  initial_triage_minutes: 5
+  session_revocation_minutes: 10
+  endpoint_isolation_minutes: 15
+  full_containment_minutes: 30
+
+steps:
+  - id: step_1
+    name: "Automated Triage"
+    type: automated
+    actions:
+      - action: fetch_identity_signin_details
+        description: "Retrieve full sign-in context (IP, device, geo, app, conditional access status)"
+        targets: [EntraID, Okta, Google]
+      - action: fetch_saas_activity_summary
+        description: "Retrieve file operations, downloads, shares in correlation window"
+        targets: [M365, GDrive, Box, AWS]
+      - action: check_endpoint_signal
+        description: "Check if endpoint telemetry shows infostealer-like behavior"
+        targets: [MDE, CrowdStrike, SentinelOne]
+        optional: true
+
+  - id: step_2
+    name: "Identity Kill-Switch (Immediate)"
+    type: automated
+    priority: critical
+    actions:
+      - action: revoke_all_sessions
+        description: "Invalidate all refresh tokens and active sessions"
+        targets: [EntraID, Okta, Google]
+        implementation:
+          entra: "Microsoft Graph API: POST /users/{id}/revokeSignInSessions"
+          okta: "Okta API: DELETE /api/v1/users/{id}/sessions"
+          google: "Admin SDK: POST /admin/directory/v1/users/{id}/signOut"
+      - action: reset_password
+        description: "Force password reset on next login"
+        targets: [EntraID, Okta, Google]
+      - action: block_legacy_auth
+        description: "Disable legacy authentication protocols"
+        targets: [EntraID, M365]
+      - action: enforce_mfa
+        description: "Require MFA for all future sign-ins"
+        targets: [EntraID, Okta, Google]
+
+  - id: step_3
+    name: "Endpoint Containment"
+    type: automated
+    condition: "if endpoint_signal_exists == true"
+    actions:
+      - action: isolate_host
+        description: "Network isolate the compromised endpoint"
+        targets: [MDE, CrowdStrike, SentinelOne]
+        implementation:
+          mde: "MDE API: POST /api/machines/{id}/isolate"
+          crowdstrike: "Falcon API: POST /devices/entities/devices-actions/v2 (action=contain)"
+          sentinelone: "S1 API: POST /web/api/v2.1/agents/actions/disconnect"
+      - action: acquire_forensic_package
+        description: "Collect memory dump, browser artifacts, credential stores"
+        targets: [MDE, CrowdStrike, SentinelOne]
+
+  - id: step_4
+    name: "Stop Data Bleed"
+    type: automated
+    actions:
+      - action: revoke_oauth_tokens
+        description: "Revoke suspicious OAuth app authorizations created in window"
+        targets: [EntraID, Okta, Google]
+      - action: remove_external_shares
+        description: "Remove external sharing links created in correlation window"
+        targets: [M365, GDrive, Box]
+        window: "last 60 minutes"
+      - action: disable_aws_access_keys
+        description: "Disable IAM access keys if AWS activity detected"
+        targets: [AWS]
+        condition: "if aws_activity_detected == true"
+
+  - id: step_5
+    name: "Scope & Evidence Collection"
+    type: semi-automated
+    actions:
+      - action: enumerate_downloaded_files
+        description: "List all files accessed/downloaded in correlation window"
+        targets: [M365, GDrive, Box, AWS]
+      - action: enumerate_shared_links
+        description: "List all external shares created"
+        targets: [M365, GDrive, Box]
+      - action: identify_impacted_repositories
+        description: "Identify S3 buckets, SharePoint sites, Drive folders accessed"
+        targets: [AWS, M365, GDrive]
+      - action: create_incident_timeline
+        description: "Generate audit-ready timeline of all events"
+
+  - id: step_6
+    name: "Eradication & Recovery"
+    type: manual
+    actions:
+      - action: reimage_endpoint
+        description: "Reimage or forensically clean the compromised endpoint"
+      - action: rotate_credentials
+        description: "Rotate all credentials, API keys, service principal secrets"
+        targets: [EntraID, Okta, Google, AWS]
+      - action: validate_clean_signins
+        description: "Monitor for clean sign-ins from known devices post-recovery"
+
+  - id: step_7
+    name: "Lessons Learned & Control Improvements"
+    type: manual
+    actions:
+      - action: create_detection_pr
+        description: "Create PR to improve detection coverage based on incident findings"
+      - action: add_regression_tests
+        description: "Add test scenarios to prevent future false negatives"
+      - action: update_conditional_access
+        description: "Harden conditional access policies (device compliance, geo-fencing)"
+      - action: review_mfa_coverage
+        description: "Audit MFA coverage gaps exposed by incident"
+
+notifications:
+  - type: email
+    recipients: [soc@company.com, ir@company.com]
+    trigger: on_incident_creation
+  - type: slack
+    channel: "#security-incidents"
+    trigger: on_incident_creation
+  - type: pagerduty
+    severity: high
+    trigger: on_incident_creation
+
+metrics:
+  - name: time_to_session_revocation
+    target: "< 10 minutes"
+  - name: time_to_endpoint_isolation
+    target: "< 15 minutes"
+  - name: time_to_full_containment
+    target: "< 30 minutes"

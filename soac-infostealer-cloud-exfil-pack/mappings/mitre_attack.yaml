@@ -1,0 +1,59 @@
+# MITRE ATT&CK Mapping
+# Maps use case to MITRE ATT&CK framework
+
+use_case: UC-INFOSTEALER-CLOUD-EXFIL-BEHAVIORAL
+
+tactics:
+  - id: TA0006
+    name: Credential Access
+    description: "Adversary is trying to steal account credentials"
+  - id: TA0001
+    name: Initial Access
+    description: "Adversary is trying to get into your network using valid accounts"
+  - id: TA0010
+    name: Exfiltration
+    description: "Adversary is trying to steal data"
+
+techniques:
+  - id: T1539
+    name: Steal Web Session Cookie
+    description: "Adversaries may steal web session cookies to gain access to web applications or Internet services"
+    detection_coverage:
+      - EDR-MDE-BROWSER-LOLBIN-CHAIN
+      - EDR-CS-BROWSER-LOLBIN-CHAIN
+      - EDR-S1-BROWSER-LOLBIN-CHAIN
+
+  - id: T1555
+    name: Credentials from Password Stores
+    description: "Adversaries may search for common password storage locations to obtain user credentials"
+    detection_coverage:
+      - EDR-MDE-BROWSER-LOLBIN-CHAIN
+
+  - id: T1078
+    name: Valid Accounts
+    description: "Adversaries may obtain and abuse credentials of existing accounts"
+    detection_coverage:
+      - IDN-ENTRA-NEW-CONTEXT-BEHAVIORAL
+      - IDN-OKTA-NEW-CONTEXT-BEHAVIORAL
+      - IDN-GOOGLE-NEW-CONTEXT-BEHAVIORAL
+
+  - id: T1567
+    name: Exfiltration Over Web Service
+    description: "Adversaries may use an existing, legitimate external Web service to exfiltrate data"
+    detection_coverage:
+      - SAAS-M365-BEHAVIORAL-EXFIL
+      - SAAS-GDRIVE-BEHAVIORAL-EXFIL
+      - SAAS-BOX-BEHAVIORAL-EXFIL
+
+  - id: T1530
+    name: Data from Cloud Storage Object
+    description: "Adversaries may access data objects from improperly secured cloud storage"
+    detection_coverage:
+      - CLOUD-AWS-CONSOLE-S3-EXFIL-BEHAVIORAL
+
+data_sources:
+  - DS0028: Logon Session
+  - DS0002: User Account
+  - DS0029: Network Traffic
+  - DS0022: File
+  - DS0009: Process

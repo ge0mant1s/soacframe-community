@@ -1,0 +1,45 @@
+# Detection: M365 - Behavioral Anomaly in File Downloads/Shares
+# Platform: Microsoft Sentinel
+# Language: KQL
+# Precision: Behavioral (mean + 3σ)
+
+let baselinePeriod = 14d;
+let detectionWindow = 1h;
+let minFloor = 20;  // Minimum activity to trigger (avoid noise on low-activity users)
+
+// Build per-user baseline (mean + stddev of daily file operations)
+let baseline = 
+    OfficeActivity
+    | where TimeGenerated between (ago(baselinePeriod) .. ago(detectionWindow))
+    | where Operation in~ ("FileDownloaded", "FileAccessed", "FileSyncDownloadedFull", "SharingSet", "SharingInvitationCreated")
+    | summarize DailyOps = count() by UserId, bin(TimeGenerated, 1d)
+    | summarize 
+        AvgOps = avg(DailyOps),
+        StdDevOps = stdev(DailyOps)
+      by UserId
+    | extend Threshold = AvgOps + (3 * StdDevOps);
+
+// Detect current activity exceeding behavioral threshold
+let currentActivity = 
+    OfficeActivity
+    | where TimeGenerated > ago(detectionWindow)
+    | where Operation in~ ("FileDownloaded", "FileAccessed", "FileSyncDownloadedFull", "SharingSet", "SharingInvitationCreated")
+    | summarize CurrentOps = count(), Operations = make_set(Operation) by UserId;
+
+currentActivity
+| join kind=inner baseline on UserId
+| where CurrentOps > Threshold and CurrentOps >= minFloor
+| extend 
+    Severity = "HIGH",
+    DetectionName = "SAAS-M365-BEHAVIORAL-EXFIL",
+    DeviationFactor = round((CurrentOps - AvgOps) / StdDevOps, 2)
+| project 
+    UserId,
+    CurrentOps,
+    AvgOps,
+    StdDevOps,
+    Threshold,
+    DeviationFactor,
+    Operations,
+    Severity,
+    DetectionName

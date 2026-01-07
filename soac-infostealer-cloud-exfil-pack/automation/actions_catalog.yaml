@@ -1,0 +1,75 @@
+# Automation Actions Catalog
+# Maps high-level actions to environment-specific implementations
+
+actions:
+  revoke_sessions:
+    description: "Invalidate all active sessions and refresh tokens for a user"
+    implementations:
+      entra:
+        api: "Microsoft Graph API"
+        endpoint: "POST /users/{id}/revokeSignInSessions"
+        docs: "https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions"
+      okta:
+        api: "Okta API"
+        endpoint: "DELETE /api/v1/users/{id}/sessions"
+        docs: "https://developer.okta.com/docs/reference/api/users/#clear-user-sessions"
+      google:
+        api: "Google Admin SDK"
+        endpoint: "POST /admin/directory/v1/users/{id}/signOut"
+        docs: "https://developers.google.com/admin-sdk/directory/reference/rest/v1/users/signOut"
+
+  reset_password:
+    description: "Force password reset on next login"
+    implementations:
+      entra:
+        api: "Microsoft Graph API"
+        endpoint: "PATCH /users/{id}"
+        body: '{"passwordProfile": {"forceChangePasswordNextSignIn": true}}'
+      okta:
+        api: "Okta API"
+        endpoint: "POST /api/v1/users/{id}/lifecycle/expire_password"
+      google:
+        api: "Google Admin SDK"
+        endpoint: "PUT /admin/directory/v1/users/{id}"
+        body: '{"changePasswordAtNextLogin": true}'
+
+  isolate_host:
+    description: "Network isolate an endpoint"
+    implementations:
+      mde:
+        api: "Microsoft Defender for Endpoint API"
+        endpoint: "POST /api/machines/{id}/isolate"
+        docs: "https://learn.microsoft.com/en-us/microsoft-365/security/defender-endpoint/isolate-machine"
+      crowdstrike:
+        api: "CrowdStrike Falcon API"
+        endpoint: "POST /devices/entities/devices-actions/v2"
+        body: '{"action_parameters": [{"name": "action_name", "value": "contain"}]}'
+        docs: "https://falcon.crowdstrike.com/documentation/84/detection-and-prevention-policies-apis"
+      sentinelone:
+        api: "SentinelOne API"
+        endpoint: "POST /web/api/v2.1/agents/actions/disconnect"
+        docs: "https://usea1-partners.sentinelone.net/api-doc/api-details?category=agents&api=disconnect-from-network"
+
+  remove_external_shares:
+    description: "Remove external sharing links created in a time window"
+    implementations:
+      m365:
+        api: "Microsoft Graph API"
+        endpoint: "DELETE /sites/{site-id}/lists/{list-id}/items/{item-id}/permissions/{permission-id}"
+        docs: "https://learn.microsoft.com/en-us/graph/api/permission-delete"
+      gdrive:
+        api: "Google Drive API"
+        endpoint: "DELETE /drive/v3/files/{fileId}/permissions/{permissionId}"
+        docs: "https://developers.google.com/drive/api/v3/reference/permissions/delete"
+      box:
+        api: "Box API"
+        endpoint: "DELETE /2.0/files/{file_id}/collaborations/{collab_id}"
+        docs: "https://developer.box.com/reference/delete-collaborations-id/"
+
+  disable_aws_access_keys:
+    description: "Disable IAM access keys for a user"
+    implementations:
+      aws:
+        api: "AWS IAM API"
+        cli: "aws iam update-access-key --access-key-id {key} --status Inactive --user-name {user}"
+        docs: "https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAccessKey.html"

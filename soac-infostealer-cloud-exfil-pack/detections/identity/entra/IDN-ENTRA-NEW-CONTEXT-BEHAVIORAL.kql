@@ -1,0 +1,51 @@
+# Detection: Entra ID - New Context Sign-In (Behavioral)
+# Platform: Microsoft Sentinel / Azure Monitor
+# Language: KQL (Kusto Query Language)
+# Precision: Behavioral baseline (14d lookback)
+
+let baselinePeriod = 14d;
+let detectionWindow = 1h;
+let minSigninThreshold = 3; // Minimum historical sign-ins to establish baseline
+
+// Build per-user baseline of known contexts (IP + Device + Country)
+let baseline = 
+    SigninLogs
+    | where TimeGenerated between (ago(baselinePeriod) .. ago(detectionWindow))
+    | where ResultType == 0  // Successful sign-ins only
+    | summarize 
+        KnownIPs = make_set(IPAddress, 1000),
+        KnownDevices = make_set(DeviceDetail.deviceId, 1000),
+        KnownCountries = make_set(LocationDetails.countryOrRegion, 200),
+        HistoricalSignins = count()
+      by UserPrincipalName
+    | where HistoricalSignins >= minSigninThreshold;
+
+// Detect sign-ins from new contexts
+SigninLogs
+| where TimeGenerated > ago(detectionWindow)
+| where ResultType == 0
+| join kind=leftouter baseline on UserPrincipalName
+| extend 
+    IsNewIP = IPAddress !in (KnownIPs),
+    IsNewDevice = DeviceDetail.deviceId !in (KnownDevices),
+    IsNewCountry = LocationDetails.countryOrRegion !in (KnownCountries)
+| where IsNewIP and (IsNewDevice or IsNewCountry)
+| extend 
+    Severity = "HIGH",
+    DetectionName = "IDN-ENTRA-NEW-CONTEXT-BEHAVIORAL",
+    ContextFingerprint = strcat(IPAddress, "|", DeviceDetail.deviceId, "|", LocationDetails.countryOrRegion)
+| project 
+    TimeGenerated,
+    UserPrincipalName,
+    IPAddress,
+    DeviceDetail,
+    LocationDetails,
+    AppDisplayName,
+    ConditionalAccessStatus,
+    IsNewIP,
+    IsNewDevice,
+    IsNewCountry,
+    ContextFingerprint,
+    CorrelationId,
+    Severity,
+    DetectionName

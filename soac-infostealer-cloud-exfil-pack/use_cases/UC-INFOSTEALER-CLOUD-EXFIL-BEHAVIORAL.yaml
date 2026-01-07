@@ -1,0 +1,75 @@
+id: UC-INFOSTEALER-CLOUD-EXFIL-BEHAVIORAL
+name: "Infostealer → Cloud Portal Exfiltration (Behavioral Precision)"
+version: "1.0.0"
+description: >
+  Detects credential/session theft originating from infostealer infection,
+  followed by anomalous identity access and SaaS/cloud data exfiltration using
+  behavioral baselining (mean + 3σ).
+
+  This use case addresses the current wave of attacks where RedLine/Lumma/Vidar
+  infostealers steal browser credentials and session tokens, enabling attackers
+  to access cloud portals (M365, AWS, GDrive, Box) and exfiltrate data at scale.
+
+severity: HIGH
+precision_mode: behavioral
+baseline_period: 14d
+detection_window: 60m
+threshold_formula: "mean + 3 * stddev"
+minimum_floor: 20  # Avoid noise on low-activity users
+
+mitre_attack:
+  tactics:
+    - TA0006  # Credential Access
+    - TA0001  # Initial Access
+    - TA0010  # Exfiltration
+  techniques:
+    - T1539   # Steal Web Session Cookie
+    - T1555   # Credentials from Password Stores
+    - T1078   # Valid Accounts
+    - T1567   # Exfiltration Over Web Service
+    - T1530   # Data from Cloud Storage Object
+
+kill_chain:
+  - stage: initial_compromise
+    description: "Infostealer infection via malvertising, ClickFix, or phishing"
+  - stage: credential_theft
+    description: "Browser credential store and session token extraction"
+  - stage: valid_account_access
+    description: "Attacker uses stolen creds/tokens to authenticate to cloud portals"
+  - stage: exfiltration
+    description: "Bulk download, mass sharing, or S3/storage access at anomalous scale"
+
+required_telemetry:
+  identity:
+    - sign_in_logs
+    - device_fingerprints
+    - geo_location_data
+    - conditional_access_logs
+  endpoint:
+    - process_creation_events
+    - browser_child_process_telemetry
+    - credential_access_signals
+  saas_cloud:
+    - file_access_logs
+    - download_events
+    - share_creation_events
+    - admin_audit_logs
+    - aws_cloudtrail_logs
+
+assumptions:
+  - MFA may be absent or bypassable via session tokens
+  - Session tokens/cookies may bypass password resets unless explicitly revoked
+  - Behavioral baselines require 14 days of clean data
+  - Low-activity users need minimum floor thresholds
+
+outcomes:
+  - Identify compromised identity with high confidence
+  - Confirm portal access + anomalous data actions
+  - Contain identity + endpoint within 10 minutes
+  - Preserve evidence + scope blast radius
+  - Generate audit-ready incident timeline
+
+references:
+  - https://cyberinsider.com/cloud-portals-at-50-global-firms-breached-by-infostealer-malware/
+  - https://www.bleepingcomputer.com/news/security/cloud-file-sharing-sites-targeted-for-corporate-data-theft-attacks/
+  - https://cybersecuritynews.com/infostealers-to-hijack-legitimate-business-infrastructure/

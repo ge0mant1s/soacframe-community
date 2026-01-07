@@ -1,0 +1,22 @@
+# Correlation Rule: Infostealer → Cloud Exfil (Behavioral Precision)
+# Platform: Elastic Security
+# Language: EQL (Event Query Language)
+# Precision: Requires 2+ signals within 60 minutes
+
+## EQL Sequence Query
+
+```eql
+sequence by user.email with maxspan=60m
+  [authentication where event.outcome == "success" and 
+   not (source.ip in user_baseline.known_ips and 
+        host.id in user_baseline.known_devices)]
+  [file where event.action in ("download", "access", "share") and
+   file.operation_count > user_baseline.threshold]
+```
+
+## Detection Rule Configuration (Elastic SIEM)
+- Rule Type: EQL Sequence
+- Index Patterns: `logs-okta-*`, `logs-google_workspace-*`, `logs-o365-*`
+- Severity: High
+- MITRE ATT&CK: T1539, T1078, T1567
+- Actions: Create alert, trigger playbook
