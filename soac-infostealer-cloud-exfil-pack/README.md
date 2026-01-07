@@ -153,5 +153,5 @@ Contributions welcome! Please submit PRs with:
 - Test scenarios
 
 ## Support
-- GitHub Issues: [github.com/your-org/soac-infostealer-pack/issues]
+- GitHub Issues: [github.com/ge0mant1s/soacframe-community/soac-infostealer-pack/issues]
 - SOaC Community: [soacframe.io/community]
