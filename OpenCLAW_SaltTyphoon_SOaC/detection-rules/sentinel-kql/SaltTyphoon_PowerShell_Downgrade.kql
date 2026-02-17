@@ -1,0 +1,5 @@
+// Detects PowerShell downgrade attacks to bypass AMSI (T1059.001)
+DeviceProcessEvents
+| where FileName =~ "powershell.exe"
+| where ProcessCommandLine has_any ("-version 2", "-v 2")
+| project TimeGenerated, DeviceName, ProcessCommandLine, InitiatingProcessParentName
