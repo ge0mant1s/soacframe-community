@@ -1,0 +1,12 @@
+// RansomHub Shadow Copy Deletion
+// Detects deletion of Volume Shadow Copies before encryption
+// MITRE: T1490 - Inhibit System Recovery
+
+DeviceProcessEvents
+| where ProcessCommandLine contains "vssadmin delete shadows" 
+    or ProcessCommandLine contains "wmic shadowcopy delete"
+    or ProcessCommandLine contains "bcdedit /set {default} recoveryenabled no"
+    or ProcessCommandLine contains "wbadmin delete catalog"
+| extend Severity = "Critical", ThreatCategory = "RansomHub-Impact-ShadowCopyDeletion"
+| project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine, Severity, ThreatCategory
+| summarize Count = count(), FirstSeen = min(TimeGenerated), Commands = make_set(ProcessCommandLine) by DeviceName, AccountName

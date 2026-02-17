@@ -1,0 +1,11 @@
+// Hunt 2: Identify Hosts with Multiple Reconnaissance Tools
+// RansomHub affiliates often use ADFind + BloodHound + WinPEAS together
+
+DeviceProcessEvents
+| where FileName has_any ("adfind.exe", "sharphound.exe", "bloodhound.exe", "winpeas.exe", "adrecon.ps1")
+| summarize ReconTools = make_set(FileName), ToolCount = dcount(FileName), 
+    FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated) 
+    by DeviceName, AccountName
+| where ToolCount >= 2
+| project DeviceName, AccountName, ReconTools, ToolCount, FirstSeen, LastSeen
+| order by ToolCount desc, FirstSeen desc

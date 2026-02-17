@@ -1,0 +1,11 @@
+// Hunt 1: Proactive Search for RMM Tools in Unusual Locations
+// Look for remote management tools installed in non-standard directories
+
+DeviceFileEvents
+| where FileName has_any ("anydesk.exe", "atera", "meshagent.exe", "screenconnect", "teamviewer.exe")
+| where FolderPath !contains "Program Files"
+| where FolderPath !contains "Program Files (x86)"
+| summarize FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated), 
+    InstallCount = count() by DeviceName, FileName, FolderPath
+| where InstallCount >= 1
+| order by FirstSeen desc

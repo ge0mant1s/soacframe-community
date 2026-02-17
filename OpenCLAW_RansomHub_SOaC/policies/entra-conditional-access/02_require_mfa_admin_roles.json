@@ -1,0 +1,25 @@
+{
+  "displayName": "REQUIRE - MFA for Admin Roles (RansomHub Defense)",
+  "state": "enabled",
+  "conditions": {
+    "users": {
+      "includeRoles": [
+        "62e90394-69f5-4237-9190-012177145e10",
+        "194ae4cb-b126-40b2-bd5b-6091b380977d",
+        "729827e3-9c14-49f7-bb1b-9608f156bbb8"
+      ]
+    },
+    "applications": {
+      "includeApplications": [
+        "All"
+      ]
+    }
+  },
+  "grantControls": {
+    "operator": "AND",
+    "builtInControls": [
+      "mfa",
+      "compliantDevice"
+    ]
+  }
+}

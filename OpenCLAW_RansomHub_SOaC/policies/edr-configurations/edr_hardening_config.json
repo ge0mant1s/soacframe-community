@@ -1,0 +1,57 @@
+{
+  "crowdstrike_falcon": {
+    "prevention_policies": [
+      {
+        "name": "RansomHub Defense - Critical Servers",
+        "settings": {
+          "sensor_tamper_protection": "ENABLED",
+          "cloud_anti_malware": "AGGRESSIVE",
+          "script_based_execution_monitoring": "ENABLED",
+          "exploit_blocking": "ENABLED",
+          "ransomware_protection": "ENABLED",
+          "behavioral_ioas": {
+            "lsass_protection": "KILL_PROCESS",
+            "credential_dumping": "KILL_PROCESS",
+            "shadow_copy_deletion": "KILL_PROCESS",
+            "suspicious_driver_load": "KILL_PROCESS"
+          }
+        }
+      }
+    ],
+    "ioa_exclusions": {
+      "comment": "Minimize exclusions - RansomHub abuses exclusion lists",
+      "allowed_paths": []
+    }
+  },
+  "defender_for_endpoint": {
+    "attack_surface_reduction_rules": [
+      {
+        "rule_id": "56a863a9-875e-4185-98a7-b882c64b5ce5",
+        "name": "Block abuse of exploited vulnerable signed drivers",
+        "action": "Block"
+      },
+      {
+        "rule_id": "d1e49aac-8f56-4280-b9ba-993a6d77406c",
+        "name": "Block process creations originating from PSExec",
+        "action": "Block"
+      },
+      {
+        "rule_id": "9e6c4e1f-7d60-472f-ba1a-a39ef669e4b2",
+        "name": "Block credential stealing from Windows LSASS",
+        "action": "Block"
+      },
+      {
+        "rule_id": "be9ba2d9-53ea-4cdc-84e5-9b1eeee46550",
+        "name": "Block executable content from email and webmail",
+        "action": "Block"
+      }
+    ],
+    "controlled_folder_access": {
+      "enabled": true,
+      "protected_folders": [
+        "C:\\Users",
+        "C:\\ProgramData"
+      ]
+    }
+  }
+}

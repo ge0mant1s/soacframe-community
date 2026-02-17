@@ -1,0 +1,16 @@
+// RansomHub Event Log Clearing
+// Detects attempts to clear Windows Event Logs
+// MITRE: T1070.001 - Indicator Removal: Clear Windows Event Logs
+
+SecurityEvent
+| where EventID == 1102 // Security log cleared
+| extend Severity = "High", ThreatCategory = "RansomHub-DefenseEvasion-LogClearing"
+| join kind=inner (
+    SecurityEvent
+    | where EventID == 4688
+    | where Process has_any ("wevtutil", "powershell", "cmd")
+    | where CommandLine contains "clear-eventlog" or CommandLine contains "wevtutil cl"
+    | extend Severity = "High", ThreatCategory = "RansomHub-LogClearingCommand"
+) on Computer
+| project TimeGenerated, Computer, Account, Process, CommandLine, Severity, ThreatCategory
+| summarize Count = count(), FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated) by Computer, Account, ThreatCategory

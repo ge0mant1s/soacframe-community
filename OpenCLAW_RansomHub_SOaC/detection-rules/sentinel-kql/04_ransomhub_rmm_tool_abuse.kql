@@ -1,0 +1,27 @@
+// RansomHub RMM Tool Abuse - AnyDesk, Atera, MeshCentral, ConnectWise
+// Detects unauthorized remote management tools used for persistence
+// MITRE: T1219 - Remote Access Software
+
+let RMMTools = dynamic([
+    "anydesk.exe", "atera", "meshagent.exe", "connectwise", "screenconnect",
+    "teamviewer.exe", "supremo.exe", "rustdesk.exe"
+]);
+let SuspiciousInstallPaths = dynamic([
+    "\AppData\", "\Temp\", "\ProgramData\", "\Users\Public\"
+]);
+union
+    (DeviceProcessEvents
+    | where FileName has_any (RMMTools)
+    | where FolderPath has_any (SuspiciousInstallPaths)
+    | extend Severity = "High", ThreatCategory = "RansomHub-Persistence"),
+    (DeviceNetworkEvents
+    | where InitiatingProcessFileName has_any (RMMTools)
+    | where RemoteIPType == "Public"
+    | extend Severity = "High", ThreatCategory = "RansomHub-C2-Communication"),
+    (DeviceRegistryEvents
+    | where RegistryKey contains "\Run" or RegistryKey contains "\Services"
+    | where RegistryValueData has_any (RMMTools)
+    | extend Severity = "High", ThreatCategory = "RansomHub-Persistence")
+| project TimeGenerated, DeviceName, AccountName, FileName, FolderPath, RemoteIP, RemoteUrl, Severity, ThreatCategory
+| summarize Count = count(), FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated), 
+    Tools = make_set(FileName) by DeviceName, AccountName, ThreatCategory

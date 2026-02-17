@@ -1,0 +1,178 @@
+{
+  "framework": "MITRE ATT&CK v14",
+  "coverage": [
+    {
+      "tactic": "Initial Access",
+      "techniques": [
+        {
+          "id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "detection_rules": [
+            "01_ransomhub_initial_access_exploitation.kql"
+          ]
+        },
+        {
+          "id": "T1078",
+          "name": "Valid Accounts",
+          "detection_rules": [
+            "02_ransomhub_credential_access_lsass.kql"
+          ]
+        }
+      ]
+    },
+    {
+      "tactic": "Execution",
+      "techniques": [
+        {
+          "id": "T1059.001",
+          "name": "PowerShell",
+          "detection_rules": [
+            "03_ransomhub_discovery_ad_enum.kql"
+          ]
+        },
+        {
+          "id": "T1053.005",
+          "name": "Scheduled Task",
+          "detection_rules": []
+        }
+      ]
+    },
+    {
+      "tactic": "Persistence",
+      "techniques": [
+        {
+          "id": "T1219",
+          "name": "Remote Access Software",
+          "detection_rules": [
+            "04_ransomhub_rmm_tool_abuse.kql"
+          ]
+        }
+      ]
+    },
+    {
+      "tactic": "Credential Access",
+      "techniques": [
+        {
+          "id": "T1003.001",
+          "name": "LSASS Memory",
+          "detection_rules": [
+            "02_ransomhub_credential_access_lsass.kql"
+          ]
+        },
+        {
+          "id": "T1558",
+          "name": "Kerberoasting",
+          "detection_rules": []
+        }
+      ]
+    },
+    {
+      "tactic": "Discovery",
+      "techniques": [
+        {
+          "id": "T1087.002",
+          "name": "Domain Account",
+          "detection_rules": [
+            "03_ransomhub_discovery_ad_enum.kql"
+          ]
+        },
+        {
+          "id": "T1482",
+          "name": "Domain Trust Discovery",
+          "detection_rules": [
+            "03_ransomhub_discovery_ad_enum.kql"
+          ]
+        }
+      ]
+    },
+    {
+      "tactic": "Lateral Movement",
+      "techniques": [
+        {
+          "id": "T1021.001",
+          "name": "Remote Desktop Protocol",
+          "detection_rules": []
+        },
+        {
+          "id": "T1021.002",
+          "name": "SMB/Windows Admin Shares",
+          "detection_rules": []
+        }
+      ]
+    },
+    {
+      "tactic": "Collection",
+      "techniques": [
+        {
+          "id": "T1560.001",
+          "name": "Archive via Utility",
+          "detection_rules": [
+            "05_ransomhub_data_exfiltration.kql"
+          ]
+        }
+      ]
+    },
+    {
+      "tactic": "Exfiltration",
+      "techniques": [
+        {
+          "id": "T1048.003",
+          "name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+          "detection_rules": [
+            "05_ransomhub_data_exfiltration.kql"
+          ]
+        },
+        {
+          "id": "T1567.002",
+          "name": "Exfiltration to Cloud Storage",
+          "detection_rules": [
+            "05_ransomhub_data_exfiltration.kql"
+          ]
+        }
+      ]
+    },
+    {
+      "tactic": "Defense Evasion",
+      "techniques": [
+        {
+          "id": "T1562.001",
+          "name": "Disable or Modify Tools",
+          "detection_rules": [
+            "06_ransomhub_edr_impairment_byovd.kql"
+          ]
+        },
+        {
+          "id": "T1070.001",
+          "name": "Clear Windows Event Logs",
+          "detection_rules": [
+            "07_ransomhub_log_clearing.kql"
+          ]
+        },
+        {
+          "id": "T1055",
+          "name": "Process Injection",
+          "detection_rules": []
+        }
+      ]
+    },
+    {
+      "tactic": "Impact",
+      "techniques": [
+        {
+          "id": "T1486",
+          "name": "Data Encrypted for Impact",
+          "detection_rules": []
+        },
+        {
+          "id": "T1490",
+          "name": "Inhibit System Recovery",
+          "detection_rules": [
+            "08_ransomhub_shadow_copy_deletion.kql"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_techniques_covered": 18,
+  "total_detection_rules": 18
+}

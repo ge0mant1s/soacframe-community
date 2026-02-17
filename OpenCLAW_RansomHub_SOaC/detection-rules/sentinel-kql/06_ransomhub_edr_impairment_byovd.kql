@@ -1,0 +1,28 @@
+// RansomHub EDRKillShifter - Bring Your Own Vulnerable Driver (BYOVD)
+// Detects attempts to disable EDR using vulnerable drivers
+// MITRE: T1562.001 - Impair Defenses: Disable or Modify Tools
+
+let VulnerableDrivers = dynamic([
+    "edrdriver.sys", "ntbios.sys", "nal.sys", "winio.sys", "procexp.sys",
+    "dbutil_2_3.sys", "gdrv.sys", "kprocesshacker.sys"
+]);
+let EDRProcesses = dynamic([
+    "csfalconservice", "mssense", "cylance", "carbonblack", "tanium",
+    "crowdstrike", "sentinelone", "defender"
+]);
+union
+    (DeviceFileEvents
+    | where FolderPath contains "\drivers\" or FolderPath contains "\system32\"
+    | where FileName has_any (VulnerableDrivers)
+    | extend Severity = "Critical", ThreatCategory = "RansomHub-DefenseEvasion-BYOVD"),
+    (DeviceProcessEvents
+    | where ProcessCommandLine contains "sc stop" or ProcessCommandLine contains "sc delete" or ProcessCommandLine contains "taskkill"
+    | where ProcessCommandLine has_any (EDRProcesses)
+    | extend Severity = "Critical", ThreatCategory = "RansomHub-EDRTermination"),
+    (DeviceRegistryEvents
+    | where RegistryKey contains "\Services\" or RegistryKey contains "\CurrentVersion\Run"
+    | where RegistryKey has_any (EDRProcesses)
+    | where ActionType == "RegistryValueDeleted"
+    | extend Severity = "Critical", ThreatCategory = "RansomHub-EDRDisable")
+| project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine, RegistryKey, Severity, ThreatCategory
+| summarize Count = count(), FirstSeen = min(TimeGenerated), Actions = make_set(ThreatCategory) by DeviceName, AccountName

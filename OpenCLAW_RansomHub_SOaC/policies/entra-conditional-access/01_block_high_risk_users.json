@@ -1,0 +1,41 @@
+{
+  "displayName": "BLOCK - RansomHub Indicators - High Risk Users",
+  "state": "enabled",
+  "conditions": {
+    "users": {
+      "includeUsers": [
+        "All"
+      ],
+      "excludeUsers": [
+        "BreakGlassAccount@domain.com"
+      ]
+    },
+    "applications": {
+      "includeApplications": [
+        "All"
+      ]
+    },
+    "userRiskLevels": [
+      "high"
+    ],
+    "signInRiskLevels": [
+      "high",
+      "medium"
+    ],
+    "locations": {
+      "includeLocations": [
+        "All"
+      ],
+      "excludeLocations": [
+        "TrustedCorporateNetwork"
+      ]
+    }
+  },
+  "grantControls": {
+    "operator": "AND",
+    "builtInControls": [
+      "block"
+    ]
+  },
+  "sessionControls": null
+}

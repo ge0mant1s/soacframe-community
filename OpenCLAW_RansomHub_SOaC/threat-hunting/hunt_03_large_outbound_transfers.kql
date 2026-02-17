@@ -1,0 +1,12 @@
+// Hunt 3: Large Outbound Data Transfers to Cloud Storage
+// Identify potential data exfiltration to Mega.nz or similar services
+
+DeviceNetworkEvents
+| where RemoteUrl has_any ("mega.nz", "anonfiles.com", "gofile.io", "transfer.sh")
+| summarize TotalBytesSent = sum(SentBytes), ConnectionCount = count(), 
+    FirstConnection = min(TimeGenerated), LastConnection = max(TimeGenerated)
+    by DeviceName, AccountName, RemoteUrl
+| where TotalBytesSent > 100000000 // >100MB
+| project DeviceName, AccountName, RemoteUrl, TotalBytesMB = TotalBytesSent / 1048576, 
+    ConnectionCount, FirstConnection, LastConnection
+| order by TotalBytesMB desc

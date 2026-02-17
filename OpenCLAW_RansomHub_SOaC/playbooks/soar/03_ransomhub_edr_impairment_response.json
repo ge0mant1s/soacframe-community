@@ -1,0 +1,42 @@
+{
+  "name": "RansomHub-EDR-Impairment-Response",
+  "description": "Emergency response to EDRKillShifter and BYOVD attacks",
+  "trigger": {
+    "type": "Sentinel Analytics Rule",
+    "rule_name": "RansomHub EDRKillShifter - BYOVD"
+  },
+  "actions": [
+    {
+      "step": 1,
+      "action": "EmergencyIsolation",
+      "target": "{{ DeviceName }}",
+      "method": "Network-level quarantine (Switch/Firewall)"
+    },
+    {
+      "step": 2,
+      "action": "AlertCIRT",
+      "priority": "P1-Critical",
+      "message": "BYOVD attack detected on {{ DeviceName }} - EDR may be compromised"
+    },
+    {
+      "step": 3,
+      "action": "BlockDriverHash",
+      "target": "{{ FileName }}",
+      "method": "CrowdStrike IOA / Defender ASR"
+    },
+    {
+      "step": 4,
+      "action": "CreateIncident",
+      "severity": "Critical",
+      "title": "RansomHub EDR Impairment - {{ DeviceName }}",
+      "assignTo": "CIRT-Lead"
+    },
+    {
+      "step": 5,
+      "action": "InitiateForensics",
+      "priority": "Immediate",
+      "method": "Deploy forensic agent to alternate network segment"
+    }
+  ],
+  "sla": "2 minutes"
+}

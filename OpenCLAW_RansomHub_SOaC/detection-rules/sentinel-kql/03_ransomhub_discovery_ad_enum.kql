@@ -1,0 +1,25 @@
+// RansomHub Discovery - Active Directory Enumeration
+// Detects ADFind, ADRecon, BloodHound, and network reconnaissance
+// MITRE: T1087.002, T1482 - Account/Domain Discovery
+
+let ReconTools = dynamic(["adfind", "adrecon", "sharphound", "bloodhound", "winpeas", "powerup"]);
+let ReconCommands = dynamic([
+    "net group", "net user", "net localgroup", "nltest", "dsquery", 
+    "get-aduser", "get-adgroup", "get-adcomputer", "invoke-bloodhound"
+]);
+union
+    (SecurityEvent
+    | where EventID == 4688
+    | where Process has_any (ReconTools) or CommandLine has_any (ReconCommands)
+    | extend Severity = "High", ThreatCategory = "RansomHub-Discovery"),
+    (DeviceProcessEvents
+    | where FileName has_any (ReconTools)
+    | extend Severity = "High", ThreatCategory = "RansomHub-Discovery"),
+    (DeviceNetworkEvents
+    | where RemotePort in (389, 636, 88, 445) // LDAP, Kerberos, SMB
+    | summarize PortScanCount = dcount(RemoteIP) by DeviceName, InitiatingProcessFileName, bin(TimeGenerated, 5m)
+    | where PortScanCount > 10
+    | extend Severity = "Medium", ThreatCategory = "RansomHub-Discovery")
+| project TimeGenerated, Computer, Account, Process, CommandLine, PortScanCount, Severity, ThreatCategory
+| summarize Count = count(), UniqueTools = make_set(Process), FirstSeen = min(TimeGenerated) by Computer, Account, ThreatCategory
+| where Count > 2

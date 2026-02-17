@@ -1,0 +1,25 @@
+// RansomHub Data Exfiltration - Rclone/WinSCP/Mega.nz
+// Detects data staging and exfiltration using cloud sync tools
+// MITRE: T1048.003, T1567.002 - Exfiltration Over Alternative Protocol
+
+let ExfilTools = dynamic(["rclone", "winscp", "filezilla", "7z", "winrar", "winzip"]);
+let CloudProviders = dynamic(["mega.nz", "s3.amazonaws.com", "dropbox.com", "anonfiles.com"]);
+union
+    (DeviceProcessEvents
+    | where FileName has_any (ExfilTools)
+    | where ProcessCommandLine contains "sync" or ProcessCommandLine contains "copy" or ProcessCommandLine contains "upload"
+    | extend Severity = "Critical", ThreatCategory = "RansomHub-Exfiltration"),
+    (DeviceNetworkEvents
+    | where RemoteUrl has_any (CloudProviders)
+    | where InitiatingProcessFileName has_any (ExfilTools)
+    | summarize TotalBytes = sum(SentBytes) by DeviceName, InitiatingProcessFileName, RemoteUrl, bin(TimeGenerated, 5m)
+    | where TotalBytes > 50000000 // >50MB in 5 min
+    | extend Severity = "Critical", ThreatCategory = "RansomHub-Exfiltration"),
+    (DeviceFileEvents
+    | where FileName endswith ".7z" or FileName endswith ".rar" or FileName endswith ".zip"
+    | where FolderPath contains "\Users\" or FolderPath contains "\Temp\"
+    | summarize ArchiveCount = count(), TotalSize = sum(FileSize) by DeviceName, InitiatingProcessFileName, bin(TimeGenerated, 10m)
+    | where ArchiveCount > 5 or TotalSize > 100000000 // >100MB
+    | extend Severity = "High", ThreatCategory = "RansomHub-DataStaging")
+| project TimeGenerated, DeviceName, FileName, ProcessCommandLine, RemoteUrl, TotalBytes, Severity, ThreatCategory
+| summarize Count = count(), FirstSeen = min(TimeGenerated), DataVolume = sum(TotalBytes) by DeviceName, ThreatCategory

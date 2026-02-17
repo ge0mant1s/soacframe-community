@@ -1,0 +1,46 @@
+{
+  "name": "RansomHub-Initial-Access-Response",
+  "description": "Automated response to RansomHub initial access attempts",
+  "trigger": {
+    "type": "Sentinel Analytics Rule",
+    "rule_name": "RansomHub Initial Access - Public Facing App Exploitation"
+  },
+  "actions": [
+    {
+      "step": 1,
+      "action": "IsolateDevice",
+      "target": "{{ SourceIP }}",
+      "method": "CrowdStrike API / Defender API"
+    },
+    {
+      "step": 2,
+      "action": "BlockIP",
+      "target": "{{ SourceIP }}",
+      "duration": "24h",
+      "method": "Azure Firewall / Entra Conditional Access"
+    },
+    {
+      "step": 3,
+      "action": "CreateIncident",
+      "severity": "High",
+      "title": "RansomHub Initial Access Detected - {{ SourceIP }}",
+      "assignTo": "SOC-Tier2"
+    },
+    {
+      "step": 4,
+      "action": "EnrichWithThreatIntel",
+      "sources": [
+        "VirusTotal",
+        "AbuseIPDB",
+        "AlienVault OTX"
+      ]
+    },
+    {
+      "step": 5,
+      "action": "NotifyTeams",
+      "channel": "security-incidents",
+      "message": "\ud83d\udea8 RansomHub initial access blocked from {{ SourceIP }}"
+    }
+  ],
+  "sla": "15 minutes"
+}
