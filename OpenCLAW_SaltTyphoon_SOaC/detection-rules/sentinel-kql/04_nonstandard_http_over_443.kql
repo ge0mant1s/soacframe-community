@@ -1,0 +1,9 @@
+// Salt Typhoon - HTTP-like traffic over 443 anomalies
+// MITRE: T1071.001 - Web Protocols
+
+DeviceNetworkEvents
+| where RemotePort == 443
+| where InitiatingProcessFileName !in~ ("chrome.exe","msedge.exe","firefox.exe")
+| where HttpUserAgent has "MSIE" or HttpUserAgent has "Trident"
+| summarize Connections=count(), SampleUrls=make_set(RemoteUrl,5) by DeviceName, InitiatingProcessFileName, RemoteIP
+| where Connections > 5

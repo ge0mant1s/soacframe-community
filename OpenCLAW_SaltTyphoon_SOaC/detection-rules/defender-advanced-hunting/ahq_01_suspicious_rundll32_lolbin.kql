@@ -1,0 +1,4 @@
+DeviceProcessEvents
+| where FileName =~ "rundll32.exe"
+| where ProcessCommandLine has_any ("AppData","\Temp\","\ProgramData\","Users\Public")
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine
