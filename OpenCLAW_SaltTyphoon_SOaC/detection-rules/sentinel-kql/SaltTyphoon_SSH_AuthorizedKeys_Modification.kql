@@ -1,6 +1,0 @@
-// Detects modification of SSH authorized_keys on Linux-based network appliances or servers
-DeviceFileEvents
-| where FileName == "authorized_keys"
-| where FolderPath has_any ("/root/.ssh", "/home/")
-| where ActionType == "FileModified" or ActionType == "FileCreated"
-| extend HostCustomEntity = DeviceName, AccountCustomEntity = InitiatingProcessAccountName

@@ -1,7 +1,0 @@
-// Salt Typhoon - Suspicious webshell-like artifacts
-// MITRE: T1505.003 - Web Shell
-
-DeviceFileEvents
-| where FileName matches regex @"(?i).+\.(asp|aspx|php|jsp)$"
-| where FolderPath has_any ("\inetpub\","\wwwroot\","/var/www/","/usr/share/nginx")
-| summarize FirstSeen=min(TimeGenerated), LastSeen=max(TimeGenerated), Count=count() by DeviceName, FolderPath, FileName

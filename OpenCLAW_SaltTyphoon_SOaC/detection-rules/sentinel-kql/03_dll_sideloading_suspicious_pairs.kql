@@ -1,7 +1,0 @@
-// Salt Typhoon - DLL sideloading patterns
-// MITRE: T1574.001 - DLL Search Order Hijacking
-
-DeviceImageLoadEvents
-| where FolderPath has_any ("\ProgramData\","\Users\Public\","\Temp\","\AppData\")
-| summarize Loads=count(), DLLs=make_set(FileName,10) by DeviceName, InitiatingProcessFileName, FolderPath
-| where Loads > 10

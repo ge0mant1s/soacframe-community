@@ -1,3 +1,0 @@
-DeviceEvents
-| where ActionType == "ServiceInstalled"
-| project TimeGenerated, DeviceName, AdditionalFields

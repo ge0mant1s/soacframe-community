@@ -1,4 +1,0 @@
-// Detects creation of GRE tunnels via netsh or ip commands (T1572)
-DeviceProcessEvents
-| where ProcessCommandLine has_any ("interface gre", "tunnel mode gre", "ip tunnel add")
-| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

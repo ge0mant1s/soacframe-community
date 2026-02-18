@@ -1,7 +1,0 @@
-// Salt Typhoon - GRE tunnel / routing changes (requires network device logs)
-// MITRE: T1090.003 - Proxy: Multi-hop Proxy (conceptual)
-
-CommonSecurityLog
-| where Message has_any ("tunnel","gre","interface Tunnel","ip route")
-| summarize Changes=count() by DeviceName, SourceIP
-| where Changes > 0

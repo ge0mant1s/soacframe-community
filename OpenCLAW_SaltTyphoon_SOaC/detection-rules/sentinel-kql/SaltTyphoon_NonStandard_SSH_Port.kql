@@ -1,6 +1,0 @@
-// Detects SSH traffic on non-standard ports (T1571)
-DeviceNetworkEvents
-| where RemotePort != 22
-| where Protocol == "Tcp"
-| where InitiatingProcessName has_any ("ssh", "sshd", "putty")
-| project TimeGenerated, DeviceName, LocalIP, RemoteIP, RemotePort, InitiatingProcessCommandLine
