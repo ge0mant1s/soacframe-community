@@ -1,0 +1,6 @@
+// Hunt: Suspicious shell activity from non-standard locations
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where FileName in ("bash", "zsh", "sh")
+| where InitiatingProcessFolderPath !has_any ("/Applications/", "/System/", "/usr/bin/")
+| project TimeGenerated, DeviceName, AccountName, InitiatingProcessFolderPath, ProcessCommandLine

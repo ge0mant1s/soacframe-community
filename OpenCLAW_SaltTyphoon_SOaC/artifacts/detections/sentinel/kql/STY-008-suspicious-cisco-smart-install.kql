@@ -1,0 +1,5 @@
+// STY-008: Cisco Smart Install (T1190 initial access) indicative port 4786
+DeviceNetworkEvents
+| where RemotePort == 4786 or LocalPort == 4786
+| extend Technique="T1190", Tactic="Initial Access"
+| project TimeGenerated, DeviceName, OSPlatform, LocalIP, LocalPort, RemoteIP, RemotePort, Protocol

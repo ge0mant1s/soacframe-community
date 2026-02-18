@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "playbookName": {
+      "type": "string",
+      "defaultValue": "STY-PB-007-macOS-Device-Lock"
+    }
+  },
+  "resources": [],
+  "metadata": {
+    "name": "STY-PB-007-macOS-Device-Lock",
+    "description": "Lock compromised macOS device via MDM."
+  }
+}

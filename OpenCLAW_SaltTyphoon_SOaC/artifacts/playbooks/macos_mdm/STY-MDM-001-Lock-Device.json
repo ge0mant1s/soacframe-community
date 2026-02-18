@@ -1,0 +1,4 @@
+{
+  "action": "DeviceLock",
+  "description": "Lock macOS device remotely via Jamf/Intune"
+}

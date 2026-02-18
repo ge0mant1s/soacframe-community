@@ -1,0 +1,6 @@
+// STY-011: /etc/passwd or /etc/shadow modified
+DeviceFileEvents
+| where FolderPath == "/etc" and FileName in ("passwd","shadow")
+| where ActionType in ("FileModified","FileCreated")
+| extend Technique="T1136", Tactic="Persistence"
+| project TimeGenerated, DeviceName, OSPlatform, FolderPath, FileName, ActionType, InitiatingProcessAccountName, InitiatingProcessFileName, InitiatingProcessCommandLine

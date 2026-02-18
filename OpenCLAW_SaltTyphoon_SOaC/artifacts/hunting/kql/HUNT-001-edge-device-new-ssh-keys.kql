@@ -1,0 +1,4 @@
+// Hunt for new SSH keys on edge devices
+DeviceFileEvents
+| where FileName == "authorized_keys" and ActionType == "FileCreated"
+| summarize count(), Devices=make_set(DeviceName) by bin(TimeGenerated, 1d)

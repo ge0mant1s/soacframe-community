@@ -1,0 +1,6 @@
+// Hunt: Baseline all LaunchAgents/Daemons for anomaly detection
+DeviceFileEvents
+| where OSPlatform == "macOS"
+| where FolderPath has_any ("/Library/LaunchAgents/", "/Library/LaunchDaemons/")
+| where FileName endswith ".plist"
+| summarize count(), FirstSeen=min(TimeGenerated), LastSeen=max(TimeGenerated) by DeviceName, FolderPath, FileName

@@ -1,0 +1,4 @@
+// STY-AH-002: Tunneling / GRE command indicators
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("ip tunnel", "gre", "gretap", "ip link add")
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, ProcessCommandLine

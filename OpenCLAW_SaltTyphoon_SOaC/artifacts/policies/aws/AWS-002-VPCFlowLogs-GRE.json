@@ -1,0 +1,6 @@
+{
+  "name": "AWS-002-VPCFlowLogs-GRE",
+  "description": "Ensure VPC Flow Logs enabled for GRE/protocol anomalies.",
+  "type": "AWS",
+  "mode": "template"
+}

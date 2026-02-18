@@ -1,0 +1,6 @@
+{
+  "name": "CA-001-Block-Legacy-Auth",
+  "description": "Block legacy authentication protocols org-wide.",
+  "type": "ConditionalAccess",
+  "mode": "template"
+}

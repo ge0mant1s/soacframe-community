@@ -1,0 +1,5 @@
+// STY-012: Firewall disabled/modified (impair defenses)
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("ufw disable","systemctl stop firewalld","iptables -F","nft flush ruleset")
+| extend Technique="T1562.004", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

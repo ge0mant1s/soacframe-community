@@ -1,0 +1,5 @@
+// STY-017: comsvcs.dll LSASS dump pattern
+DeviceProcessEvents
+| where ProcessCommandLine has_all ("rundll32","comsvcs.dll") and ProcessCommandLine has "MiniDump"
+| extend Technique="T1003.001", Tactic="Credential Access"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

@@ -1,0 +1,6 @@
+// STY-AH-003: macOS LaunchAgent/Daemon persistence
+DeviceFileEvents
+| where OSPlatform == "macOS"
+| where FolderPath has_any ("/Library/LaunchAgents/", "/Library/LaunchDaemons/")
+| where FileName endswith ".plist"
+| project TimeGenerated, DeviceName, FolderPath, FileName, InitiatingProcessCommandLine

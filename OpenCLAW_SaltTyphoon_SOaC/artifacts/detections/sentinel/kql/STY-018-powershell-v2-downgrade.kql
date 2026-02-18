@@ -1,0 +1,6 @@
+// STY-018: PowerShell downgrade to v2
+DeviceProcessEvents
+| where FileName =~ "powershell.exe"
+| where ProcessCommandLine has_any ("-version 2","-v 2")
+| extend Technique="T1059.001", Tactic="Execution"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, ProcessCommandLine, InitiatingProcessParentFileName

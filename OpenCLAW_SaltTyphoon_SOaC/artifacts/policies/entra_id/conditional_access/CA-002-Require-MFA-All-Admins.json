@@ -1,0 +1,6 @@
+{
+  "name": "CA-002-Require-MFA-All-Admins",
+  "description": "Require phishing-resistant MFA for admin roles.",
+  "type": "ConditionalAccess",
+  "mode": "template"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "CA-004-Block-High-Risk-Signins",
+  "description": "Block high-risk sign-ins and enforce user risk remediation.",
+  "type": "ConditionalAccess",
+  "mode": "template"
+}

@@ -1,0 +1,4 @@
+{
+  "action": "RemoveProfile",
+  "description": "Remove device certificates and force re-enrollment"
+}

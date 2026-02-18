@@ -1,0 +1,6 @@
+{
+  "name": "CA-003-Require-Compliant-Device",
+  "description": "Require compliant device for privileged access.",
+  "type": "ConditionalAccess",
+  "mode": "template"
+}

@@ -1,0 +1,5 @@
+// STY-007: Potential exfil over FTP/TFTP of config files (network device config dump)
+DeviceNetworkEvents
+| where RemotePort in (21,69)
+| extend Technique="T1048.003", Tactic="Exfiltration"
+| project TimeGenerated, DeviceName, OSPlatform, LocalIP, RemoteIP, RemotePort, InitiatingProcessFileName, InitiatingProcessCommandLine

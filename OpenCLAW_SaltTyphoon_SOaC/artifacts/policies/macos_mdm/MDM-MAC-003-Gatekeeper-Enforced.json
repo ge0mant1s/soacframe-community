@@ -1,0 +1,6 @@
+{
+  "name": "MDM-MAC-003-Gatekeeper-Enforced",
+  "description": "Enforce Gatekeeper (only allow App Store + identified developers).",
+  "type": "macOS_MDM",
+  "mode": "baseline"
+}

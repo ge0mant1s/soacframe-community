@@ -1,0 +1,6 @@
+{
+  "name": "CA-005-Restrict-Admin-Portals",
+  "description": "Restrict Azure/Entra admin portals to trusted locations.",
+  "type": "ConditionalAccess",
+  "mode": "template"
+}

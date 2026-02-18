@@ -1,0 +1,6 @@
+// STY-014: Exchange ProxyLogon-ish web patterns (requires IIS logs in Sentinel)
+W3CIISLog
+| where csUriStem has_any ("/ecp/","/owa/")
+| where csMethod in ("POST","GET")
+| where csUriQuery has "X-BEResource" or csUriStem has "proxyLogon.ecp"
+| project TimeGenerated, sComputerName, cIP, csMethod, csUriStem, csUriQuery, csUserAgent, scStatus

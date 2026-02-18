@@ -1,0 +1,7 @@
+// STY-MAC-002: Gatekeeper disabled (defense evasion)
+// Platform: macOS
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where ProcessCommandLine has_any ("spctl --master-disable", "spctl --global-disable")
+| extend Technique="T1553.001", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

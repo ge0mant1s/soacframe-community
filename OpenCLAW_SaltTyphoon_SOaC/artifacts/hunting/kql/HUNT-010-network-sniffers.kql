@@ -1,0 +1,4 @@
+// Hunt: sniffing tool usage
+DeviceProcessEvents
+| where FileName has_any ("tcpdump","tshark")
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

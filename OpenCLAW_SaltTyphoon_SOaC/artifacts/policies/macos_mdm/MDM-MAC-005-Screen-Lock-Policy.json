@@ -1,0 +1,6 @@
+{
+  "name": "MDM-MAC-005-Screen-Lock-Policy",
+  "description": "Enforce screen lock after 5 minutes of inactivity.",
+  "type": "macOS_MDM",
+  "mode": "baseline"
+}

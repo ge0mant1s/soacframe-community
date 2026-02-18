@@ -1,0 +1,9 @@
+// STY-001: SSH authorized_keys modified/created (persistence)
+// Platform: Linux, macOS (via MDE)
+DeviceFileEvents
+| where FileName == "authorized_keys"
+| where FolderPath has_any ("/root/.ssh", "/home/", "/Users/")
+| where ActionType in ("FileCreated","FileModified")
+| extend Technique="T1098.004", Tactic="Persistence"
+| project TimeGenerated, DeviceName, OSPlatform, FolderPath, FileName, ActionType,
+          InitiatingProcessAccountName, InitiatingProcessFileName, InitiatingProcessCommandLine

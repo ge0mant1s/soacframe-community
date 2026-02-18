@@ -1,0 +1,5 @@
+// Hunt: Execution of unsigned applications
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where ProcessCommandLine has "xattr -d com.apple.quarantine"
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

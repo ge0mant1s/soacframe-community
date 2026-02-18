@@ -1,0 +1,7 @@
+// STY-003: SSH-like traffic on non-22 ports (non-standard port)
+DeviceNetworkEvents
+| where Protocol =~ "Tcp"
+| where RemotePort !in (22)
+| where InitiatingProcessCommandLine has_any ("ssh","scp") or InitiatingProcessFileName has_any ("ssh","scp","putty")
+| extend Technique="T1571", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, OSPlatform, LocalIP, LocalPort, RemoteIP, RemotePort, InitiatingProcessFileName, InitiatingProcessCommandLine

@@ -1,0 +1,7 @@
+// STY-MAC-005: dscl user enumeration (discovery)
+// Platform: macOS
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where FileName == "dscl" and ProcessCommandLine has_any ("list /Users", "read /Users")
+| extend Technique="T1087.001", Tactic="Discovery"
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

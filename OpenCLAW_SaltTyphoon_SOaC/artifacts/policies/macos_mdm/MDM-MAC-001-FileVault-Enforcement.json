@@ -1,0 +1,6 @@
+{
+  "name": "MDM-MAC-001-FileVault-Enforcement",
+  "description": "Enforce FileVault encryption on all macOS devices.",
+  "type": "macOS_MDM",
+  "mode": "baseline"
+}

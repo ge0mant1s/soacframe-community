@@ -1,0 +1,7 @@
+// STY-MAC-004: Suspicious Keychain access (credential access)
+// Platform: macOS
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where ProcessCommandLine has_any ("security dump-keychain", "security find-generic-password", "security find-internet-password")
+| extend Technique="T1555.001", Tactic="Credential Access"
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

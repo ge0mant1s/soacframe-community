@@ -1,0 +1,6 @@
+{
+  "name": "MDM-MAC-004-System-Extension-Approval",
+  "description": "Auto-approve EDR system extensions (CrowdStrike/Defender).",
+  "type": "macOS_MDM",
+  "mode": "baseline"
+}

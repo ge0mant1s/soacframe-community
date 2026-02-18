@@ -1,0 +1,4 @@
+// Hunt: FTP/TFTP egress from infrastructure hosts
+DeviceNetworkEvents
+| where RemotePort in (21,69)
+| summarize count(), RemoteIPs=make_set(RemoteIP) by DeviceName, bin(TimeGenerated, 1d)

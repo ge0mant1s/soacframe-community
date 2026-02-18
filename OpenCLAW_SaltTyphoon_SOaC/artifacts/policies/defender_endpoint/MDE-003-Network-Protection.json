@@ -1,0 +1,6 @@
+{
+  "name": "MDE-003-Network-Protection",
+  "description": "Enable network protection (block mode).",
+  "type": "DefenderForEndpoint",
+  "mode": "baseline"
+}

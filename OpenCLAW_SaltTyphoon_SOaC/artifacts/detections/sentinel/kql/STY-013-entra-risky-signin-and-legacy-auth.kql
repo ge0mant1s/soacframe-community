@@ -1,0 +1,6 @@
+// STY-013: Risky sign-ins + legacy auth indicators (identity foothold)
+// Data: SigninLogs (Entra ID)
+SigninLogs
+| where ResultType == 0
+| where ClientAppUsed in ("Exchange ActiveSync","Other clients","IMAP4","POP3")
+| project TimeGenerated, UserPrincipalName, AppDisplayName, ClientAppUsed, IPAddress, Location, UserAgent

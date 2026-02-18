@@ -1,0 +1,5 @@
+// STY-015: Suspicious scheduled task creation (if endpoints affected)
+DeviceProcessEvents
+| where ProcessCommandLine has_all ("schtasks","/Create")
+| extend Technique="T1053.005", Tactic="Persistence"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

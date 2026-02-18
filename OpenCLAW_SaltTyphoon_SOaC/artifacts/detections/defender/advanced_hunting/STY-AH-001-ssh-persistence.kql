@@ -1,0 +1,4 @@
+// STY-AH-001: SSH persistence via authorized_keys
+DeviceFileEvents
+| where FileName == "authorized_keys" and ActionType in ("FileCreated","FileModified")
+| project TimeGenerated, DeviceName, OSPlatform, FolderPath, InitiatingProcessAccountName, InitiatingProcessCommandLine

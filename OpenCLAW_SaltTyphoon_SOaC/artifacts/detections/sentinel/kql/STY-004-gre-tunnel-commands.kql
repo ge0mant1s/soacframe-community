@@ -1,0 +1,5 @@
+// STY-004: GRE tunnel creation commands (protocol tunneling)
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("ip tunnel add", "mode gre", "interface tunnel", "gre add")
+| extend Technique="T1572", Tactic="Command and Control"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

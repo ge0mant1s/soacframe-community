@@ -1,0 +1,5 @@
+// STY-009: Network sniffing tools execution
+DeviceProcessEvents
+| where FileName has_any ("tcpdump","tshark","dumpcap") or ProcessCommandLine has_any ("tcpdump ","tshark ")
+| extend Technique="T1040", Tactic="Discovery"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

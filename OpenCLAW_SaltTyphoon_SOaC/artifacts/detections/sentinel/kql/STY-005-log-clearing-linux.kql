@@ -1,0 +1,5 @@
+// STY-005: Clearing Linux logs (indicator removal)
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("rm -f /var/log", "> /var/log", "truncate -s 0 /var/log", "cat /dev/null > /var/log")
+| extend Technique="T1070.002", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

@@ -1,0 +1,5 @@
+// Hunt: Keychain dump attempts
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where ProcessCommandLine has_any ("security dump-keychain", "security find-generic-password")
+| summarize count() by DeviceName, AccountName, bin(TimeGenerated, 1h)

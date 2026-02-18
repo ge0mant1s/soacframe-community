@@ -1,0 +1,9 @@
+// STY-MAC-001: LaunchAgent/LaunchDaemon persistence
+// Platform: macOS
+DeviceFileEvents
+| where OSPlatform == "macOS"
+| where FolderPath has_any ("/Library/LaunchAgents/", "/Library/LaunchDaemons/", "/Users/", "~/Library/LaunchAgents/")
+| where FileName endswith ".plist"
+| where ActionType in ("FileCreated", "FileModified")
+| extend Technique="T1543.001", Tactic="Persistence"
+| project TimeGenerated, DeviceName, FolderPath, FileName, InitiatingProcessAccountName, InitiatingProcessCommandLine

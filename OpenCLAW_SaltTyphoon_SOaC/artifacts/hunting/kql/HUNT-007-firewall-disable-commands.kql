@@ -1,0 +1,4 @@
+// Hunt: firewall changes
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("ufw disable","iptables -F","nft flush ruleset")
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

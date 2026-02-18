@@ -1,0 +1,7 @@
+// Hunt: burst of log clear commands then new outbound connections
+let clears = DeviceProcessEvents | where ProcessCommandLine has_any ("truncate -s 0 /var/log","rm -f /var/log") | project DeviceName, t=TimeGenerated;
+let egress = DeviceNetworkEvents | where RemoteIP !startswith "10." | project DeviceName, TimeGenerated, RemoteIP, RemotePort;
+clears
+| join kind=innerunique (egress) on DeviceName
+| where TimeGenerated between (t .. t + 30m)
+| project DeviceName, t, TimeGenerated, RemoteIP, RemotePort

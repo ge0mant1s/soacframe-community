@@ -1,0 +1,4 @@
+// Hunt: SSH connections sourcing from loopback-like patterns (requires netflow/NSG/Firewall logs)
+CommonSecurityLog
+| where DestinationPort == 22 and SourceIP in ("127.0.0.1")
+| project TimeGenerated, DeviceName, SourceIP, DestinationIP, DestinationPort, Activity

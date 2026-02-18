@@ -1,0 +1,4 @@
+// Hunt: Exchange suspicious URIs in IIS logs
+W3CIISLog
+| where csUriStem has_any ("/ecp/","/owa/")
+| summarize count() by csUriStem, cIP, bin(TimeGenerated, 1h)

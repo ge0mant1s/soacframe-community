@@ -1,0 +1,6 @@
+{
+  "name": "MDE-001-ASR-Recommended",
+  "description": "Enable Microsoft Defender ASR recommended rules.",
+  "type": "DefenderForEndpoint",
+  "mode": "baseline"
+}

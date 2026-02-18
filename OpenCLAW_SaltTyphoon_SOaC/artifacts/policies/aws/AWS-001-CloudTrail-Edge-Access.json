@@ -1,0 +1,6 @@
+{
+  "name": "AWS-001-CloudTrail-Edge-Access",
+  "description": "Ensure CloudTrail enabled + alerts for unusual IAM access patterns.",
+  "type": "AWS",
+  "mode": "template"
+}

@@ -1,0 +1,114 @@
+{
+  "group": "G1045",
+  "name": "Salt Typhoon",
+  "coverage": [
+    {
+      "technique": "T1098.004",
+      "name": "SSH Authorized Keys",
+      "artifacts": [
+        "STY-001",
+        "STY-AH-001"
+      ],
+      "platforms": [
+        "Linux",
+        "macOS"
+      ]
+    },
+    {
+      "technique": "T1572",
+      "name": "Protocol Tunneling",
+      "artifacts": [
+        "STY-004",
+        "STY-AH-002"
+      ],
+      "platforms": [
+        "Linux",
+        "Windows"
+      ]
+    },
+    {
+      "technique": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "artifacts": [
+        "STY-008",
+        "STY-014"
+      ],
+      "platforms": [
+        "Network"
+      ]
+    },
+    {
+      "technique": "T1070.002",
+      "name": "Clear Linux Logs",
+      "artifacts": [
+        "STY-005",
+        "STY-006"
+      ],
+      "platforms": [
+        "Linux"
+      ]
+    },
+    {
+      "technique": "T1040",
+      "name": "Network Sniffing",
+      "artifacts": [
+        "STY-009"
+      ],
+      "platforms": [
+        "Linux",
+        "macOS"
+      ]
+    },
+    {
+      "technique": "T1543.001",
+      "name": "Launch Agent",
+      "artifacts": [
+        "STY-MAC-001"
+      ],
+      "platforms": [
+        "macOS"
+      ]
+    },
+    {
+      "technique": "T1553.001",
+      "name": "Gatekeeper Bypass",
+      "artifacts": [
+        "STY-MAC-002"
+      ],
+      "platforms": [
+        "macOS"
+      ]
+    },
+    {
+      "technique": "T1562.001",
+      "name": "Disable or Modify Tools",
+      "artifacts": [
+        "STY-MAC-003",
+        "STY-MAC-006"
+      ],
+      "platforms": [
+        "macOS"
+      ]
+    },
+    {
+      "technique": "T1555.001",
+      "name": "Keychain",
+      "artifacts": [
+        "STY-MAC-004"
+      ],
+      "platforms": [
+        "macOS"
+      ]
+    },
+    {
+      "technique": "T1087.001",
+      "name": "Local Account",
+      "artifacts": [
+        "STY-MAC-005"
+      ],
+      "platforms": [
+        "macOS"
+      ]
+    }
+  ]
+}

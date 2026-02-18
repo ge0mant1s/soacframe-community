@@ -1,0 +1,4 @@
+// Hunt: useradd/adduser usage
+DeviceProcessEvents
+| where FileName in ("useradd","adduser")
+| summarize count() by DeviceName, AccountName, bin(TimeGenerated, 7d)

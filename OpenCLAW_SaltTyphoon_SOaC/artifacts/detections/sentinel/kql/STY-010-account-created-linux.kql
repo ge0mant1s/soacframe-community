@@ -1,0 +1,5 @@
+// STY-010: Linux user creation (create account)
+DeviceProcessEvents
+| where FileName in ("useradd","adduser")
+| extend Technique="T1136", Tactic="Persistence"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

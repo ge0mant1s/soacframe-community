@@ -1,0 +1,6 @@
+// STY-006: .bash_history cleared
+DeviceFileEvents
+| where FileName == ".bash_history"
+| where ActionType in ("FileDeleted","FileModified")
+| extend Technique="T1070.003", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, OSPlatform, FolderPath, ActionType, InitiatingProcessAccountName, InitiatingProcessFileName, InitiatingProcessCommandLine

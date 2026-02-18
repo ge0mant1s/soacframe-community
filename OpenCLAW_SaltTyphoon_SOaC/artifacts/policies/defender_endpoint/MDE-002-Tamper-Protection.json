@@ -1,0 +1,6 @@
+{
+  "name": "MDE-002-Tamper-Protection",
+  "description": "Ensure tamper protection is enabled.",
+  "type": "DefenderForEndpoint",
+  "mode": "baseline"
+}

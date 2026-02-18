@@ -1,0 +1,6 @@
+{
+  "name": "MDM-MAC-002-Firewall-Enabled",
+  "description": "Enable macOS firewall in stealth mode.",
+  "type": "macOS_MDM",
+  "mode": "baseline"
+}

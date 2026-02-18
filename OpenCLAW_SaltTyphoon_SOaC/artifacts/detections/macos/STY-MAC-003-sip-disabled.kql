@@ -1,0 +1,7 @@
+// STY-MAC-003: System Integrity Protection (SIP) disabled
+// Platform: macOS
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where ProcessCommandLine has "csrutil disable"
+| extend Technique="T1562.001", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

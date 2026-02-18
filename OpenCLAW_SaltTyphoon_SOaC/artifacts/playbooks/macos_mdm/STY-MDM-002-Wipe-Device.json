@@ -1,0 +1,4 @@
+{
+  "action": "EraseDevice",
+  "description": "Wipe macOS device remotely"
+}

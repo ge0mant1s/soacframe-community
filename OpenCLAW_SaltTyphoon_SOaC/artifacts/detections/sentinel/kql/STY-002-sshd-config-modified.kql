@@ -1,0 +1,7 @@
+// STY-002: sshd_config modified (non-standard ports / auth changes)
+DeviceFileEvents
+| where FileName in ("sshd_config","ssh_config")
+| where ActionType in ("FileCreated","FileModified")
+| extend Technique="T1571", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, OSPlatform, FolderPath, FileName, ActionType,
+          InitiatingProcessAccountName, InitiatingProcessFileName, InitiatingProcessCommandLine

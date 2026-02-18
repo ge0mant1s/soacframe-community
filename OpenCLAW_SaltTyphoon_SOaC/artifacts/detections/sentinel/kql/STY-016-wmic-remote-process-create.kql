@@ -1,0 +1,5 @@
+// STY-016: WMIC remote process create (lateral movement)
+DeviceProcessEvents
+| where ProcessCommandLine has_all ("wmic","process","call","create")
+| extend Technique="T1047", Tactic="Lateral Movement"
+| project TimeGenerated, DeviceName, OSPlatform, AccountName, FileName, ProcessCommandLine

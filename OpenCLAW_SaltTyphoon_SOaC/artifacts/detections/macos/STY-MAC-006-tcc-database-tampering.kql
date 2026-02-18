@@ -1,0 +1,9 @@
+// STY-MAC-006: TCC database tampering (defense evasion)
+// Platform: macOS
+DeviceFileEvents
+| where OSPlatform == "macOS"
+| where FolderPath has "/Library/Application Support/com.apple.TCC/"
+| where FileName == "TCC.db"
+| where ActionType in ("FileModified", "FileDeleted")
+| extend Technique="T1562.001", Tactic="Defense Evasion"
+| project TimeGenerated, DeviceName, FolderPath, ActionType, InitiatingProcessAccountName, InitiatingProcessCommandLine

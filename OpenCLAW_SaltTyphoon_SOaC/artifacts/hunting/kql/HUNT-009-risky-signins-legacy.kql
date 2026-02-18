@@ -1,0 +1,4 @@
+// Hunt: legacy auth sign-ins
+SigninLogs
+| where ClientAppUsed in ("IMAP4","POP3","Exchange ActiveSync","Other clients")
+| summarize count() by UserPrincipalName, IPAddress, bin(TimeGenerated, 1d)

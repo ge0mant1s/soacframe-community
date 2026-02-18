@@ -1,0 +1,5 @@
+// Hunt: MDM profile removal attempts
+DeviceProcessEvents
+| where OSPlatform == "macOS"
+| where ProcessCommandLine has_any ("profiles remove", "profiles delete")
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine

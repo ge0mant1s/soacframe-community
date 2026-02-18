@@ -1,0 +1,4 @@
+// Hunt: GRE traffic (protocol 47) if you ingest flow logs
+AWSVPCFlow
+| where Protocol == 47
+| summarize count() by SrcAddr, DstAddr, bin(TimeGenerated, 1h)
