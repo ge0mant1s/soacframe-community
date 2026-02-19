@@ -1,0 +1,6 @@
+// Correlates M365 mass downloads with Salesforce/GWorkspace bulk exports
+union OfficeActivity, SalesforceAuditLogs, GWorkspaceActivity
+| where Operation in ("FileDownloaded", "BulkExport", "DownloadContent")
+| summarize EventCount = count() by UserEmail, bin(TimeGenerated, 30m), ClientIP
+| where EventCount > 50
+| project TimeGenerated, UserEmail, EventCount, ClientIP

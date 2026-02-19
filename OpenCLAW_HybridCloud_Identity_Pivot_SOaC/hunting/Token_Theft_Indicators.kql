@@ -1,0 +1,10 @@
+// Hunting for token theft via IP mismatch between Sign-in and Resource Access
+SigninLogs
+| where ResultType == 0
+| project CorrelationId, UserPrincipalName, IPAddress, AppDisplayName
+| join kind=inner (
+    AADServicePrincipalSignInLogs // Or other resource logs
+    | project CorrelationId, ResourceIP = IPAddress
+) on CorrelationId
+| where IPAddress != ResourceIP
+| project UserPrincipalName, AppDisplayName, OriginalIP = IPAddress, ResourceIP

@@ -1,0 +1,5 @@
+1. Simulate M365 Phish: Use Evilginx to capture session token.
+2. Pivot to AWS: Use captured token to access AWS Console via Entra SSO.
+3. SaaS Access: Navigate to Salesforce and trigger a 'Report Export'.
+4. GWorkspace: Create a new 'App Password' or OAuth Grant.
+5. Verify: Check Sentinel for 'Entra_to_AWS_Pivot' and 'SaaS_Data_Exfiltration' alerts.

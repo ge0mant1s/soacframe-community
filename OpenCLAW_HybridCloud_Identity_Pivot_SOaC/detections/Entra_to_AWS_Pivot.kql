@@ -1,0 +1,14 @@
+// Detects a user signing into Entra ID and immediately assuming a high-privilege role in AWS
+let Lookback = 1h;
+SigninLogs
+| where ResultType == 0
+| where AppDisplayName has "Amazon Web Services"
+| project TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName
+| join kind=inner (
+    AWSCloudTrail
+    | where EventName == "AssumeRole"
+    | extend RoleName = tostring(parse_json(RequestParameters).roleArn)
+    | where RoleName has "Admin" or RoleName has "Privileged"
+) on $left.UserPrincipalName == $right.UserIdentityUserName
+| where datetime_diff('minute', TimeGenerated1, TimeGenerated) < 15
+| project TimeGenerated, UserPrincipalName, RoleName, IPAddress, EventSource

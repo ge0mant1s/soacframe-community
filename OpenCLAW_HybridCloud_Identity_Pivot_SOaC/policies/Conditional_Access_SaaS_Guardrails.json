@@ -1,0 +1,10 @@
+{
+    "DisplayName": "OpenCLAW-CA01: Strict MFA for High-Value SaaS",
+    "State": "Enabled",
+    "Conditions": {
+        "Applications": { "IncludeApplications": ["Salesforce", "SAP", "Google Workspace", "AWS"] },
+        "Users": { "IncludeGroups": ["AllUsers"] },
+        "Locations": { "ExcludeLocations": ["TrustedNamedLocations"] }
+    },
+    "GrantControls": { "BuiltInControls": ["Mfa"] }
+}
