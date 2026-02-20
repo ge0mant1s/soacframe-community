@@ -1,0 +1,4 @@
+// Detect potential prompt injection attempts in internal LLM application logs
+AppServiceConsoleLogs
+| where ResultDescription has_any ("ignore previous instructions", "system prompt", "DAN mode", "output the full prompt")
+| project TimeGenerated, ResultDescription, UserIdentity, ClientIP

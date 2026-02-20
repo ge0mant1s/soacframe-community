@@ -1,0 +1,6 @@
+// Hunt for rapid-fire reconnaissance that suggests AI-driven automation
+DeviceNetworkEvents
+| where RemotePort in (80, 443, 8080)
+| summarize UniqueTargets = dcount(RemoteUrl), RequestCount = count() by DeviceName, bin(TimeGenerated, 1m)
+| where UniqueTargets > 100 and RequestCount > 500
+| project TimeGenerated, DeviceName, UniqueTargets, RequestCount

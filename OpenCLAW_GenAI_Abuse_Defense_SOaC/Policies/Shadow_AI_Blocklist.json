@@ -1,0 +1,12 @@
+{
+    "name": "OpenCLAW-Block-Shadow-AI",
+    "description": "Blocks unapproved GenAI platforms to prevent data leakage",
+    "rules": [
+        {
+            "urlFilter": ["*chatgpt.com*", "*claude.ai*", "*perplexity.ai*"],
+            "action": "Block",
+            "userGroups": ["All-Users"],
+            "exceptions": ["AI-Research-Team"]
+        }
+    ]
+}

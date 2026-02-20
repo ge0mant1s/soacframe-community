@@ -1,0 +1,6 @@
+// Detect unusual volume of data being sent to known AI API endpoints
+DeviceNetworkEvents
+| where RemoteUrl has_any ("api.openai.com", "anthropic.com", "cohere.ai", "gemini.google.com")
+| summarize TotalBytes = sum(SentBytes) by DeviceName, RemoteUrl, bin(TimeGenerated, 1h)
+| where TotalBytes > 50000000 // 50MB threshold for potential exfiltration
+| project TimeGenerated, DeviceName, RemoteUrl, TotalBytes
