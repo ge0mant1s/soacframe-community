@@ -1,0 +1,17 @@
+{
+    "displayName": "OpenCLAW-Strict-Identity-Defense",
+    "state": "enabledForReportingButNotEnforced",
+    "conditions": {
+        "userRiskLevels": ["high", "medium"],
+        "signInRiskLevels": ["high", "medium"],
+        "applications": { "includeApplications": ["All"] }
+    },
+    "grantControls": {
+        "operator": "OR",
+        "builtInControls": ["mfa", "compliantDevice"]
+    },
+    "sessionControls": {
+        "signInFrequency": { "value": 1, "type": "hours" },
+        "persistentBrowser": { "mode": "never" }
+    }
+}

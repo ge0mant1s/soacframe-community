@@ -1,0 +1,8 @@
+// Detect potential Adversary-in-the-Middle (AiTM) / Token Theft
+SigninLogs
+| where ResultType == 0
+| where AppDisplayName in ("Office 365", "Azure Portal", "Salesforce", "AWS")
+| extend City = tostring(LocationDetails.city), Country = tostring(LocationDetails.countryOrRegion)
+| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), IPCount = dcount(IPAddress), LocationCount = dcount(City) by UserPrincipalName, UserAgent
+| where IPCount > 1 and LocationCount > 1
+| project UserPrincipalName, StartTime, EndTime, IPCount, LocationCount, UserAgent

@@ -1,0 +1,12 @@
+// Hunt for dormant accounts suddenly performing high-privilege actions
+let LookbackPeriod = 90d;
+let ActivePeriod = 1d;
+let DormantUsers = SigninLogs
+| where TimeGenerated > ago(LookbackPeriod) and TimeGenerated < ago(ActivePeriod)
+| summarize LastSeen = max(TimeGenerated) by UserPrincipalName
+| where LastSeen < ago(30d);
+SigninLogs
+| where TimeGenerated > ago(ActivePeriod)
+| where UserPrincipalName in (DormantUsers)
+| where ResultType == 0
+| project TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName, Location
