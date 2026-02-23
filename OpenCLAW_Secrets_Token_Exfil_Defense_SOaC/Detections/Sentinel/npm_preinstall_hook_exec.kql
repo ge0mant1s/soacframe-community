@@ -1,0 +1,7 @@
+// Detects npm lifecycle hook spawning suspicious child processes (Shai-Hulud pattern)
+DeviceProcessEvents
+| where InitiatingProcessFileName in~ ("npm", "node")
+| where FileName in~ ("sh", "bash", "curl", "wget", "bun", "python3")
+| project TimeGenerated, DeviceName, AccountName, InitiatingProcessFileName, FileName, ProcessCommandLine
+| extend RiskScore = 80
+| order by TimeGenerated desc

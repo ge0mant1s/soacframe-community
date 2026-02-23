@@ -1,0 +1,31 @@
+{
+  "policy": "aws-oidc-least-privilege-for-ci",
+  "version": "1.0",
+  "controls": [
+    {
+      "id": "AWS-01",
+      "name": "Use OIDC federation for GitHub Actions",
+      "rationale": "Eliminates long-lived IAM access keys in CI"
+    },
+    {
+      "id": "AWS-02",
+      "name": "Restrict OIDC trust to specific repo and branch",
+      "condition": {
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:YOUR_ORG/YOUR_REPO:ref:refs/heads/main"
+        }
+      }
+    },
+    {
+      "id": "AWS-03",
+      "name": "Alert on IAM key creation within 15 min of workflow run",
+      "tool": "CloudTrail + EventBridge rule",
+      "rationale": "Detects attacker creating persistent keys after OIDC pivot"
+    },
+    {
+      "id": "AWS-04",
+      "name": "Block Describe*/List* API calls from unexpected OIDC sessions",
+      "rationale": "Detects cloud discovery storm following CI compromise"
+    }
+  ]
+}

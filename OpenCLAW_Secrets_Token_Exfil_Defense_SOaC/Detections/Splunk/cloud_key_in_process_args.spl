@@ -1,0 +1,6 @@
+index=endpoint sourcetype=sysmon
+| rex field=CommandLine "(?i)(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z\-_]{35}|ya29\.[0-9A-Za-z\-_]+)"
+| where isnotnull(MATCH)
+| stats count by host, user, CommandLine
+| eval alert="CRITICAL - Cloud Key Pattern in Process Args"
+| table _time, host, user, CommandLine, alert

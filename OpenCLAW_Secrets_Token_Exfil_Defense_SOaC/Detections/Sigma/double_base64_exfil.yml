@@ -1,0 +1,23 @@
+title: Double Base64 Encoded Credential Exfiltration
+id: b2c3d4e5-f6a7-8901-bcde-f12345678901
+status: experimental
+description: Detects double-base64 encoding patterns used by Shai-Hulud to obfuscate credential exfiltration.
+author: OpenCLAW / Abacus.AI
+logsource:
+    category: process_creation
+    product: linux
+detection:
+    selection:
+        CommandLine|contains:
+            - 'base64 | base64'
+            - 'base64 -d | base64'
+            - 'echo.*base64.*base64'
+    condition: selection
+falsepositives:
+    - Rare legitimate encoding pipelines
+level: high
+tags:
+    - attack.defense_evasion
+    - attack.t1027
+    - attack.exfiltration
+    - attack.t1041

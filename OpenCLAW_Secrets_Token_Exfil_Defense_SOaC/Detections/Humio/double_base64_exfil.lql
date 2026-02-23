@@ -1,0 +1,4 @@
+// Humio/Falcon LogScale: Double base64 exfil pattern
+#type=process_creation
+| command_line = /base64.*\|.*base64/
+| table([@timestamp, host, user, command_line])

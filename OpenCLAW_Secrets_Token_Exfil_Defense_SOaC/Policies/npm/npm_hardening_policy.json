@@ -1,0 +1,30 @@
+{
+  "policy": "npm-secrets-hardening",
+  "version": "1.0",
+  "controls": [
+    {
+      "id": "NPM-01",
+      "name": "Enable npm audit on install",
+      "command": "npm config set audit true",
+      "rationale": "Automatically flag known malicious packages"
+    },
+    {
+      "id": "NPM-02",
+      "name": "Restrict lifecycle script execution",
+      "command": "npm config set ignore-scripts true",
+      "rationale": "Prevents preinstall/postinstall hooks from executing — breaks Shai-Hulud chain"
+    },
+    {
+      "id": "NPM-03",
+      "name": "Use .npmrc token scoping",
+      "config": "//registry.npmjs.org/:_authToken=${NPM_TOKEN}",
+      "rationale": "Avoid hardcoded tokens in package.json or source code"
+    },
+    {
+      "id": "NPM-04",
+      "name": "Enable secret scanning on publish",
+      "tool": "trufflehog / git-secrets pre-commit hook",
+      "rationale": "Block accidental PAT/key commits before they reach the registry"
+    }
+  ]
+}

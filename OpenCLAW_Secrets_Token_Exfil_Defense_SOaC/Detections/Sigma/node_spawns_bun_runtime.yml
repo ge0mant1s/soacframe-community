@@ -1,0 +1,19 @@
+title: Node.js Spawning Bun Runtime (Suspicious npm Lifecycle)
+id: c3d4e5f6-a7b8-9012-cdef-123456789012
+status: experimental
+description: Detects Node.js spawning the Bun runtime — a novel execution path introduced in Shai-Hulud 2.0.
+author: OpenCLAW / Abacus.AI
+logsource:
+    category: process_creation
+    product: linux
+detection:
+    selection:
+        ParentImage|endswith: '/node'
+        Image|endswith: '/bun'
+    condition: selection
+falsepositives:
+    - Developers explicitly using Bun in their workflow
+level: medium
+tags:
+    - attack.execution
+    - attack.t1059

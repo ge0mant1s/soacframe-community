@@ -1,0 +1,6 @@
+// Detects GitHub PAT patterns in process command lines — potential credential exfiltration
+DeviceProcessEvents
+| where ProcessCommandLine matches regex @"ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}"
+| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine, FileName
+| extend Alert = "CRITICAL - GitHub PAT Detected in Process Args"
+| order by TimeGenerated desc

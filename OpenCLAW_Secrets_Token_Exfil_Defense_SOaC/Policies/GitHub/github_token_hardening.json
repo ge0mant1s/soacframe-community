@@ -1,0 +1,35 @@
+{
+  "policy": "github-token-and-secret-hardening",
+  "version": "1.0",
+  "controls": [
+    {
+      "id": "GH-01",
+      "name": "Restrict default GITHUB_TOKEN permissions",
+      "setting": "Settings > Actions > Workflow permissions > Read repository contents only",
+      "rationale": "Limits blast radius if workflow is compromised"
+    },
+    {
+      "id": "GH-02",
+      "name": "Enable secret scanning + push protection",
+      "setting": "Settings > Security > Secret scanning > Enable push protection",
+      "rationale": "Blocks PATs and cloud keys from being committed"
+    },
+    {
+      "id": "GH-03",
+      "name": "Use OIDC instead of long-lived cloud keys",
+      "rationale": "Eliminates static AWS/GCP/Azure keys from CI environment variables"
+    },
+    {
+      "id": "GH-04",
+      "name": "Require PR review for workflow file changes",
+      "path": ".github/workflows/*",
+      "rationale": "Prevents direct push of malicious workflow files"
+    },
+    {
+      "id": "GH-05",
+      "name": "Pin third-party Actions to full commit SHA",
+      "example": "uses: actions/checkout@a81bbbf8298c0fa03ea29cdc473d45769f953675",
+      "rationale": "Prevents tag-hijacking of external actions"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+title: Malicious npm Preinstall Hook Execution
+id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+status: experimental
+description: Detects Node.js or Bun runtime spawned from npm lifecycle hooks (preinstall/postinstall) — Shai-Hulud pattern.
+author: OpenCLAW / Abacus.AI
+references:
+    - https://www.trendmicro.com/en_us/research/25/i/npm-supply-chain-attack.html
+logsource:
+    category: process_creation
+    product: linux
+detection:
+    selection_parent:
+        ParentImage|endswith:
+            - '/npm'
+            - '/node'
+    selection_child:
+        Image|endswith:
+            - '/sh'
+            - '/bash'
+            - '/curl'
+            - '/wget'
+            - '/bun'
+            - '/python3'
+    condition: selection_parent and selection_child
+falsepositives:
+    - Legitimate build scripts using curl/wget
+level: high
+tags:
+    - attack.execution
+    - attack.t1059.007
+    - attack.credential_access
+    - attack.t1552.001

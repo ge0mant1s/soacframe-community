@@ -1,0 +1,5 @@
+// Humio/Falcon LogScale: npm preinstall hook spawning suspicious child
+#type=process_creation
+| parent_process_name = /npm|node/i
+| process_name = /sh|bash|curl|wget|bun|python3/i
+| table([@timestamp, host, user, parent_process_name, process_name, command_line])

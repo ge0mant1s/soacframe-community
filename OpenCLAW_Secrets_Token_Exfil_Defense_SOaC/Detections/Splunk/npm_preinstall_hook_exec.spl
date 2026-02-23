@@ -1,0 +1,9 @@
+| tstats count min(_time) as firstTime max(_time) as lastTime
+  FROM datamodel=Endpoint.Processes
+  WHERE Processes.parent_process_name IN ("npm", "node")
+    AND Processes.process_name IN ("sh", "bash", "curl", "wget", "bun", "python3")
+  BY Processes.dest, Processes.user, Processes.parent_process_name, Processes.process_name, Processes.process
+| rename Processes.* AS *
+| eval risk_score=80
+| table firstTime, lastTime, dest, user, parent_process_name, process_name, process, risk_score
+| sort -firstTime

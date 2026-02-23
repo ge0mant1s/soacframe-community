@@ -1,0 +1,22 @@
+title: Suspicious DNS Request to GitHub API from CI Runner
+id: d4e5f6a7-b8c9-0123-defa-234567890123
+status: experimental
+description: Detects unusual DNS lookups to api.github.com from non-standard processes — potential secret exfil.
+author: OpenCLAW / Abacus.AI
+logsource:
+    category: dns
+    product: linux
+detection:
+    selection:
+        QueryName|contains: 'api.github.com'
+    filter_legit:
+        ParentImage|contains:
+            - 'git'
+            - 'gh'
+    condition: selection and not filter_legit
+falsepositives:
+    - GitHub CLI tools
+level: medium
+tags:
+    - attack.exfiltration
+    - attack.t1041

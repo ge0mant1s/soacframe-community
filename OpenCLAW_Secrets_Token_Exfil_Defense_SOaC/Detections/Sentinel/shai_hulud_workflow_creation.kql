@@ -1,0 +1,7 @@
+// Detects creation of the known Shai-Hulud malicious workflow file
+DeviceFileEvents
+| where FileName contains "shai-hulud-workflow.yml"
+    or FolderPath contains ".github/workflows"
+| where ActionType == "FileCreated"
+| project TimeGenerated, DeviceName, AccountName, FolderPath, FileName
+| extend Alert = "HIGH - Potential Malicious Workflow File Created"

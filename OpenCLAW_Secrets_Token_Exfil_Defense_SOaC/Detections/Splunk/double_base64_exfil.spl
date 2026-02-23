@@ -1,0 +1,7 @@
+index=endpoint sourcetype=sysmon
+| rex field=CommandLine "(?<b64_chain>base64[^|]*\|[^|]*base64)"
+| where isnotnull(b64_chain)
+| stats count by host, user, CommandLine, b64_chain
+| where count > 0
+| eval risk="HIGH - Double Base64 Exfil Pattern"
+| table _time, host, user, CommandLine, risk
