@@ -1,0 +1,4 @@
+
+#type=npm_audit_logs
+| "preinstall" = /.*(curl|wget|sh|bash|python).*/
+| table([@timestamp, package_name, version, scripts.preinstall])

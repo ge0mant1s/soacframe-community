@@ -1,0 +1,5 @@
+
+index=github_logs action=workflow_run
+| rex field=workflow_content "(curl|wget).*?((?:[0-9]{1,3}\.){3}[0-9]{1,3}|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
+| stats count by repository, workflow_name, destination_ip
+| where count > 0

@@ -1,0 +1,7 @@
+
+// Detects AWS STS AssumeRole from GitHub Actions outside of approved repositories
+AWSCloudTrail
+| where EventName == "AssumeRoleWithWebIdentity"
+| extend GitHubRepo = tostring(parse_json(RequestParameters).RoleSessionName)
+| where GitHubRepo !contains "approved-org-name"
+| project TimeGenerated, SourceIpAddress, GitHubRepo, UserAgent

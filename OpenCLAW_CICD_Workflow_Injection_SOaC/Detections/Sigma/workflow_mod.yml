@@ -1,0 +1,17 @@
+
+title: Suspicious CI/CD Workflow File Modification
+id: d1e2f3a4-b5c6-4d7e-8f9a-0b1c2d3e4f5g
+status: experimental
+description: Detects modifications to GitHub/GitLab workflow files outside of standard PR/MR processes.
+author: OpenCLAW / Abacus.AI
+logsource:
+    product: github
+    service: audit_log
+detection:
+    selection:
+        action: 'repo.add_workflow'
+        path|contains: '.github/workflows/'
+    condition: selection
+falsepositives:
+    - Legitimate DevOps automation
+level: high
