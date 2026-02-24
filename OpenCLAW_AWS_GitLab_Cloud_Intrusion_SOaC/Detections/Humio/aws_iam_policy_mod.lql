@@ -1,0 +1,4 @@
+// Detects IAM policy changes that could indicate privilege escalation
+#type=aws_cloudtrail
+| eventName = /PutUserPolicy|PutRolePolicy|CreatePolicyVersion/
+| table([@timestamp, userIdentity.arn, eventName, requestParameters.policyName, sourceIPAddress])

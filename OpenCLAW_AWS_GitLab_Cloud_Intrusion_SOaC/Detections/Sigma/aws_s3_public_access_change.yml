@@ -1,0 +1,18 @@
+title: AWS S3 Bucket Public Access Modification
+id: e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b
+status: experimental
+description: Detects changes to S3 bucket public access blocks — potential data staging for exfiltration.
+author: OpenCLAW / Abacus.AI
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        EventName:
+            - 'PutBucketPublicAccessBlock'
+            - 'DeletePublicAccessBlock'
+    condition: selection
+level: high
+tags:
+    - attack.exfiltration
+    - attack.t1537

@@ -1,0 +1,5 @@
+index=gitlab_logs action=git-upload-pack
+| stats count as clone_count by user, remote_ip, repository
+| where clone_count > 20
+| eval risk="HIGH - Mass Repository Cloning Detected"
+| table _time, user, remote_ip, repository, clone_count, risk

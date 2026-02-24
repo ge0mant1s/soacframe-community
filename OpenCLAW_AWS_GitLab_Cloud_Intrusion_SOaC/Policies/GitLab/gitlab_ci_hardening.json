@@ -1,0 +1,20 @@
+{
+  "policy": "gitlab-ci-hardening",
+  "controls": [
+    {
+      "id": "GL-01",
+      "name": "Enforce Protected Branches",
+      "rationale": "Prevents direct pushes to main/production branches where CI/CD workflows reside."
+    },
+    {
+      "id": "GL-02",
+      "name": "Restrict Runner Registration",
+      "rationale": "Prevents attackers from registering malicious runners to steal secrets."
+    },
+    {
+      "id": "GL-03",
+      "name": "Mask Sensitive CI Variables",
+      "rationale": "Ensures AWS/API keys are not leaked in job logs."
+    }
+  ]
+}

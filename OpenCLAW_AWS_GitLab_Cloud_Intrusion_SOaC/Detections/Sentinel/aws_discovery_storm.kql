@@ -1,0 +1,7 @@
+// Detects a "Discovery Storm" - high volume of AWS Describe/List calls from a single identity
+AWSCloudTrail
+| where EventName startswith "Describe" or EventName startswith "List" or EventName startswith "Get"
+| summarize EventCount = count(), UniqueEvents = dcount(EventName), Services = dcount(EventSource) by UserIdentityArn, SourceIpAddress, bin(TimeGenerated, 15m)
+| where EventCount > 50 and UniqueEvents > 10
+| project TimeGenerated, UserIdentityArn, SourceIpAddress, EventCount, UniqueEvents, Services
+| extend Alert = "HIGH - AWS Resource Discovery Storm Detected"
