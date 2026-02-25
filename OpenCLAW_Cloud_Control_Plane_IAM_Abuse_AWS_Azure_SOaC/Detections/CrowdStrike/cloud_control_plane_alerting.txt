@@ -1,0 +1,6 @@
+// CrowdStrike Falcon (example) - suspicious cloud account activity
+// Use Falcon Next-Gen SIEM / LogScale datasets if integrated with CloudTrail/AzureActivity.
+// Focus: StopLogging/DeleteTrail and role assignment changes.
+(event_simpleName IN ("CloudTrailEvent","AzureActivityEvent"))
+| filter (EventName="StopLogging" OR EventName="DeleteTrail" OR OperationNameValue="Microsoft.Authorization/roleAssignments/write")
+| groupBy([AccountId, SubscriptionId, UserIdentityArn, Caller], function=count())

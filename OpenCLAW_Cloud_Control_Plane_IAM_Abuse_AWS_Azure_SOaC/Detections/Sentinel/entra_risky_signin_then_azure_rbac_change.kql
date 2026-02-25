@@ -1,0 +1,14 @@
+// Correlate risky sign-in then Azure RBAC change within 30 minutes
+let window = 30m;
+let risky = SigninLogs
+| where ResultType == 0
+| where RiskLevelDuringSignIn in ("medium","high") or RiskState in ("atRisk","confirmedCompromised")
+| project UserPrincipalName, RiskTime=TimeGenerated, IPAddress;
+let rbac = AzureActivity
+| where OperationNameValue has "Microsoft.Authorization/roleAssignments/write"
+| project Caller, RbacTime=TimeGenerated, CallerIpAddress, OperationNameValue, ResourceId;
+rbac
+| join kind=inner (risky) on $left.Caller == $right.UserPrincipalName
+| where RbacTime between (RiskTime .. RiskTime + window)
+| project RiskTime, RbacTime, Caller, IPAddress, CallerIpAddress, OperationNameValue, ResourceId
+| extend Severity="High", Alert="Risky Entra Sign-in followed by Azure RBAC Change"

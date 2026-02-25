@@ -1,0 +1,6 @@
+// MDE Advanced Hunting (cloud-focused) depends on connector tables.
+// Use this as a scaffold if you ingest CloudTrail/AzureActivity into Defender XDR.
+// Goal: Identify telemetry disruption and privilege changes.
+// Replace table names with your environment's schema.
+// Example:
+// CloudAppEvents | where ActionType in ("StopLogging","DeleteTrail")

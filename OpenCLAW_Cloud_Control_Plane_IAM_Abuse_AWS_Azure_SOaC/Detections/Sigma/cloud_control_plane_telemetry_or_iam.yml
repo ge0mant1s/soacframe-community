@@ -1,0 +1,34 @@
+title: Cloud Control Plane Telemetry Disruption or IAM Escalation
+id: 9f4b5c61-2b1a-4d8d-9fd4-1d1b0aa5b6f2
+status: experimental
+description: Detects events consistent with cloud telemetry disruption or IAM privilege escalation.
+author: OpenCLAW / Abacus.AI
+logsource:
+  product: cloud
+  service: audit
+detection:
+  selection_aws_telemetry:
+    eventName:
+      - StopLogging
+      - DeleteTrail
+      - UpdateTrail
+      - PutEventSelectors
+  selection_aws_iam:
+    eventSource: iam.amazonaws.com
+    eventName:
+      - CreateAccessKey
+      - UpdateAssumeRolePolicy
+      - AttachRolePolicy
+      - PutRolePolicy
+  selection_azure_rbac:
+    operationNameValue:
+      - Microsoft.Authorization/roleAssignments/write
+      - Microsoft.Authorization/roleAssignments/delete
+      - Microsoft.Authorization/roleDefinitions/write
+  condition: 1 of selection_*
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.privilege_escalation
+  - attack.t1562.008
+  - attack.t1098

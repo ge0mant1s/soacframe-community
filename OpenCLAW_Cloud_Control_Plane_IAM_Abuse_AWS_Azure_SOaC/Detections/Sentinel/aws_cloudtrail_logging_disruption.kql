@@ -1,0 +1,5 @@
+// AWS CloudTrail logging disruption (via AWSCloudTrail table / normalized events)
+AWSCloudTrail
+| where EventName in ("StopLogging","DeleteTrail","UpdateTrail","PutEventSelectors","PutInsightSelectors")
+| project TimeGenerated, AccountId, AwsRegion, EventName, UserIdentityArn, SourceIpAddress, UserAgent, EventSource, RequestParameters
+| extend Severity = "High", Alert = "AWS CloudTrail Telemetry Disruption"

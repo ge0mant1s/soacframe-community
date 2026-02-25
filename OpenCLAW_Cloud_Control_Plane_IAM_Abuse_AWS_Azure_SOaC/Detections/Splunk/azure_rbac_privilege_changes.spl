@@ -1,0 +1,3 @@
+index=azure sourcetype="azure:activity" operationNameValue IN ("Microsoft.Authorization/roleAssignments/write","Microsoft.Authorization/roleAssignments/delete","Microsoft.Authorization/roleDefinitions/write")
+| stats count values(caller) as callers values(callerIpAddress) as ips by operationNameValue, subscriptionId, resourceId
+| eval severity="high", alert="Azure RBAC Privilege Change"

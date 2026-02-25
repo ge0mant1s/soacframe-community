@@ -1,0 +1,9 @@
+// Azure privileged role assignment changes (AzureActivity)
+AzureActivity
+| where OperationNameValue has_any (
+    "Microsoft.Authorization/roleAssignments/write",
+    "Microsoft.Authorization/roleAssignments/delete",
+    "Microsoft.Authorization/roleDefinitions/write"
+)
+| project TimeGenerated, SubscriptionId, ResourceGroup, OperationNameValue, ActivityStatusValue, Caller, CallerIpAddress, ResourceId
+| extend Severity = "High", Alert = "Azure RBAC Privilege Change"

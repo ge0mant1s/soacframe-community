@@ -1,0 +1,3 @@
+index=cloudtrail eventName IN (StopLogging, DeleteTrail, UpdateTrail, PutEventSelectors, PutInsightSelectors)
+| stats count min(_time) as firstTime max(_time) as lastTime values(userIdentity.arn) as arns values(src_ip) as src_ips values(userAgent) as userAgents by account_id, awsRegion, eventName
+| eval severity="high", alert="AWS CloudTrail Telemetry Disruption"

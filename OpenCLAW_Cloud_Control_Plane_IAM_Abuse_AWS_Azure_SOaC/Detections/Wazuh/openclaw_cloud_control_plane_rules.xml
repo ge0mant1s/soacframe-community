@@ -1,0 +1,21 @@
+<group name="openclaw,cloud,iam">
+  <!-- Requires cloud audit logs ingested into Wazuh (custom decoder / integration) -->
+  <rule id="110010" level="12">
+    <decoded_as>json</decoded_as>
+    <field name="eventName">StopLogging|DeleteTrail|PutEventSelectors</field>
+    <description>OpenCLAW: AWS CloudTrail telemetry disruption</description>
+    <mitre>
+      <id>T1562.008</id>
+    </mitre>
+  </rule>
+
+  <rule id="110011" level="12">
+    <decoded_as>json</decoded_as>
+    <field name="eventSource">iam.amazonaws.com</field>
+    <field name="eventName">CreateAccessKey|UpdateAssumeRolePolicy|AttachRolePolicy|PutRolePolicy</field>
+    <description>OpenCLAW: AWS IAM privilege escalation/persistence change</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+  </rule>
+</group>

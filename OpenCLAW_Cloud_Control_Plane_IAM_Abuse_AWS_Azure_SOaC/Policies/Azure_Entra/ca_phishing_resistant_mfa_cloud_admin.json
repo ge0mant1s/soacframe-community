@@ -1,0 +1,20 @@
+{
+  "displayName": "OpenCLAW - Require Phishing-Resistant MFA for Cloud Admin",
+  "state": "enabled",
+  "conditions": {
+    "users": {
+      "includeRoles": ["Global Administrator", "Privileged Role Administrator"]
+    },
+    "applications": {
+      "includeApplications": ["All"]
+    },
+    "clientAppTypes": ["browser", "mobileAppsAndDesktopClients"],
+    "signInRiskLevels": ["high", "medium"],
+    "userRiskLevels": ["high", "medium"]
+  },
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": ["authenticationStrength", "compliantDevice"],
+    "authenticationStrength": {"id": "PhishingResistantMFA"}
+  }
+}

@@ -1,0 +1,9 @@
+// AWS IAM privilege escalation / persistence primitives
+AWSCloudTrail
+| where EventSource == "iam.amazonaws.com"
+| where EventName in (
+    "CreateAccessKey","UpdateAssumeRolePolicy","PutRolePolicy","AttachRolePolicy","AttachUserPolicy",
+    "PutUserPolicy","CreateUser","CreatePolicyVersion","SetDefaultPolicyVersion","AddUserToGroup"
+)
+| project TimeGenerated, AccountId, AwsRegion, EventName, UserIdentityArn, SourceIpAddress, UserAgent, RequestParameters
+| extend Severity = "High", Alert = "AWS IAM Privilege Escalation / Persistence Change"
