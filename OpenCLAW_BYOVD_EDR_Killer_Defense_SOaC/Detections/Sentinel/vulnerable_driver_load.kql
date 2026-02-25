@@ -1,0 +1,5 @@
+// Detects the loading of known vulnerable drivers used in BYOVD attacks
+DeviceImageLoadEvents
+| where FileName in~ ("zam64.sys", "RTCore64.sys", "gdrv.sys", "procexp.sys")
+| project TimeGenerated, DeviceName, FileName, FolderPath, SHA256
+| extend Alert = "CRITICAL - Known Vulnerable Driver Loaded (Potential BYOVD)"

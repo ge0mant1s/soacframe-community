@@ -1,0 +1,5 @@
+# Enable Microsoft Vulnerable Driver Blocklist via Registry
+Path: HKLM\SYSTEM\CurrentControlSet\Control\CI\Config
+ValueName: VulnerableDriverBlocklistEnable
+ValueType: REG_DWORD
+Value: 1

@@ -1,0 +1,4 @@
+// Detects attempts to terminate EDR processes via taskkill or powershell
+event_simpleName=ProcessRollup2 FileName IN ("taskkill.exe", "powershell.exe")
+| filter CommandLine="*CrowdStrike*" OR CommandLine="*Defender*" OR CommandLine="*SentinelOne*"
+| stats count by ComputerName, UserSid, CommandLine
